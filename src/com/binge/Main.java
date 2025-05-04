@@ -8,6 +8,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import java.util.*;
 
 public class Main extends Application {
 
@@ -21,7 +22,8 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         Pane pane = new Pane();
 
-//        Circle redBall = new Circle(150, 50, 20);
+        ArrayList<Obstacle> obstacleArrayList = new ArrayList<Obstacle>();
+
         Character redBall = new Character(150, 50, 20);
         redBall.body.setFill(Color.RED);
         pane.getChildren().add(redBall.body);
@@ -29,10 +31,12 @@ public class Main extends Application {
         CircleObstacle obs1 = new CircleObstacle(155, 200, 20);
         obs1.body.setFill(Color.GRAY);
         pane.getChildren().add(obs1.body);
+        obstacleArrayList.add(obs1);
 
         CircleObstacle obs2 = new CircleObstacle(40, 150, 30);
         obs2.body.setFill(Color.GRAY);
         pane.getChildren().add(obs2.body);
+        obstacleArrayList.add(obs2);
 
         Scene scene = new Scene(pane, 300, 300);
 
@@ -96,7 +100,8 @@ public class Main extends Application {
                     redBall.vX += MOVE_ACCELERATION * deltaTime;
                 }
                 if (movingUp[0]) {
-                    redBall.vY -= MOVE_ACCELERATION * deltaTime;
+                    redBall.vY = -300;
+                    movingUp[0] = false;
                 }
 
                 // Limit the maximum horizontal speed
@@ -107,11 +112,10 @@ public class Main extends Application {
                     redBall.vX = -MAX_MOVE_SPEED;
                 }
 
-                if (obs1.checkCollision(redBall)) {
-                    obs1.handleCollision(redBall);
-                }
-                if (obs2.checkCollision(redBall)) {
-                    obs2.handleCollision(redBall);
+                for (Obstacle obs: obstacleArrayList) {
+                    if (obs.checkCollision(redBall)) {
+                        obs.handleCollision(redBall);
+                    }
                 }
 
 //                System.out.println(deltaTime);
@@ -129,7 +133,6 @@ public class Main extends Application {
                 if (redBall.body.getCenterY() + redBall.body.getRadius() > pane.getHeight()) {
                     redBall.body.setCenterY(pane.getHeight() - redBall.body.getRadius());
                     redBall.vY = -(redBall.vY-100);
-                    System.out.println("vY" + redBall.vY);
                 }
                 if (redBall.body.getCenterY() - redBall.body.getRadius() < 0) {
                     redBall.body.setCenterY(redBall.body.getRadius());
@@ -226,11 +229,9 @@ class CircleObstacle extends Obstacle {
         System.out.println("X: " + c.posX + " " + c.posY);
         c.vX -= 2*projectionX;
         c.vY -= 2*projectionY;
-        c.vX *= 0.8;
-        c.vY *= 0.8;
 
-        c.posX = (int)(c.body.getCenterX() + c.vX * 0.03);
-        c.posY = (int)(c.body.getCenterY() + c.vY * 0.03);
+        c.posX = (int)(c.body.getCenterX() + c.vX * 0.04);
+        c.posY = (int)(c.body.getCenterY() + c.vY * 0.04);
         c.body.setCenterX(c.posX);
         c.body.setCenterY(c.posY);
     }
