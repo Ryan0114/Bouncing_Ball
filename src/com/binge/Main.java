@@ -114,7 +114,7 @@ public class Main extends Application {
                     obs2.handleCollision(redBall);
                 }
 
-                System.out.println(deltaTime);
+//                System.out.println(deltaTime);
 
                 // Update position
                 redBall.posX = (int)(redBall.body.getCenterX() + redBall.vX * deltaTime);
@@ -126,17 +126,22 @@ public class Main extends Application {
 
 
                 // Ground collision
-                if (redBall.body.getCenterY() + redBall.body.getRadius() >= pane.getHeight()) {
+                if (redBall.body.getCenterY() + redBall.body.getRadius() > pane.getHeight()) {
                     redBall.body.setCenterY(pane.getHeight() - redBall.body.getRadius());
-                    redBall.vY = -redBall.vY*0.8;
+                    redBall.vY = -(redBall.vY-100);
+                    System.out.println("vY" + redBall.vY);
+                }
+                if (redBall.body.getCenterY() - redBall.body.getRadius() < 0) {
+                    redBall.body.setCenterY(redBall.body.getRadius());
+                    redBall.vY = -(redBall.vY+100);
                 }
 
                 // Wall collisions (left and right bounds)
-                if (redBall.body.getCenterX() - redBall.body.getRadius() <= 0) {
+                if (redBall.body.getCenterX() - redBall.body.getRadius() < 0) {
                     redBall.body.setCenterX(redBall.body.getRadius());
                     redBall.vX = -redBall.vX*0.8;
                 }
-                if (redBall.body.getCenterX() + redBall.body.getRadius() >= pane.getWidth()) {
+                if (redBall.body.getCenterX() + redBall.body.getRadius() > pane.getWidth()) {
                     redBall.body.setCenterX(pane.getWidth() - redBall.body.getRadius());
                     redBall.vX = -redBall.vX*0.8;
                 }
@@ -221,10 +226,11 @@ class CircleObstacle extends Obstacle {
         System.out.println("X: " + c.posX + " " + c.posY);
         c.vX -= 2*projectionX;
         c.vY -= 2*projectionY;
+        c.vX *= 0.8;
+        c.vY *= 0.8;
 
-
-        c.posX = (int)(c.body.getCenterX() + c.vX * 0.04);
-        c.posY = (int)(c.body.getCenterY() + c.vY * 0.04);
+        c.posX = (int)(c.body.getCenterX() + c.vX * 0.03);
+        c.posY = (int)(c.body.getCenterY() + c.vY * 0.03);
         c.body.setCenterX(c.posX);
         c.body.setCenterY(c.posY);
     }
