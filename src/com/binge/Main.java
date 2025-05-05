@@ -38,40 +38,41 @@ public class Main extends Application {
         pane.getChildren().add(obs2.body);
         obstacleArrayList.add(obs2);
 
+        CircleObstacle obs3 = new CircleObstacle(250, 170, 40);
+        obs3.body.setFill(Color.GRAY);
+        pane.getChildren().add(obs3.body);
+        obstacleArrayList.add(obs3);
+
         Scene scene = new Scene(pane, 300, 300);
 
         stage.setScene(scene);
         stage.setTitle("Ball");
         stage.show();
 
-        // Key press states
-        final boolean[] movingLeft = {false};
-        final boolean[] movingRight = {false};
-        final boolean[] movingUp = {false};
 
         // Set up key pressed
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) {
-                movingLeft[0] = true;
+                redBall.movingLeft = true;
             }
             if (event.getCode() == KeyCode.D || event.getCode() == KeyCode.RIGHT) {
-                movingRight[0] = true;
+                redBall.movingRight = true;
             }
             if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
-                movingUp[0] = true;
+                redBall.movingUp = true;
             }
         });
 
         // Set up key released
         scene.setOnKeyReleased(event -> {
             if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) {
-                movingLeft[0] = false;
+                redBall.movingLeft = false;
             }
             if (event.getCode() == KeyCode.D || event.getCode() == KeyCode.RIGHT) {
-                movingRight[0] = false;
+                redBall.movingRight = false;
             }
             if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
-                movingUp[0] = false;
+                redBall.movingUp = false;
             }
         });
 
@@ -93,15 +94,15 @@ public class Main extends Application {
                 redBall.vY += GRAVITY * deltaTime;
 
                 // Update horizontal velocity based on input
-                if (movingLeft[0]) {
+                if (redBall.movingLeft) {
                     redBall.vX -= MOVE_ACCELERATION * deltaTime;
                 }
-                if (movingRight[0]) {
+                if (redBall.movingRight) {
                     redBall.vX += MOVE_ACCELERATION * deltaTime;
                 }
-                if (movingUp[0]) {
+                if (redBall.movingUp) {
                     redBall.vY = -300;
-                    movingUp[0] = false;
+                    redBall.movingUp = false;
                 }
 
                 // Limit the maximum horizontal speed
@@ -113,8 +114,10 @@ public class Main extends Application {
                 }
 
                 for (Obstacle obs: obstacleArrayList) {
-                    if (obs.checkCollision(redBall)) {
-                        obs.handleCollision(redBall);
+                    int newPosX = (int)(redBall.posX + redBall.vX * deltaTime);
+                    int newPosY = (int)(redBall.posY + redBall.vY * deltaTime);
+                    if (obs.checkCollision(newPosX, newPosY, redBall.radius)) {
+                        obs.handleCollision(redBall, deltaTime);
                     }
                 }
 
@@ -123,8 +126,6 @@ public class Main extends Application {
                 // Update position
                 redBall.posX = (int)(redBall.body.getCenterX() + redBall.vX * deltaTime);
                 redBall.posY = (int)(redBall.body.getCenterY() + redBall.vY * deltaTime);
-//                redBall.body.setCenterY(redBall.body.getCenterY() + redBall.vY * deltaTime);
-//                redBall.body.setCenterX(redBall.body.getCenterX() + redBall.vX * deltaTime);
                 redBall.body.setCenterX(redBall.posX);
                 redBall.body.setCenterY(redBall.posY);
 
@@ -163,6 +164,7 @@ class Character {
     int posX, posY, radius;
     double vX, vY;
     Circle body;
+    boolean movingLeft, movingRight, movingUp;
 
     Character(int posX, int posY, int radius) {
         this.posX = posX;
@@ -170,6 +172,9 @@ class Character {
         this.radius = radius;
         this.vX = 0;
         this.vY = 0;
+        this.movingLeft = false;
+        this.movingRight = false;
+        this.movingUp = false;
         body = new Circle(posX, posY, radius);
     }
 }
@@ -184,8 +189,8 @@ abstract class Obstacle {
     int posX, posY;
     private String color;
 
-    abstract boolean checkCollision(Character c);
-    abstract void handleCollision(Character c);
+    abstract boolean checkCollision(int x, int y, int radius);
+    abstract void handleCollision(Character c, double deltaTime);
 }
 
 class CircleObstacle extends Obstacle {
@@ -204,19 +209,24 @@ class CircleObstacle extends Obstacle {
     }
 
     @Override
-    boolean checkCollision(Character c) {
-//        if (getLength(c.vX, c.vY) < 0.01) return false;
-//        System.out.println(getLength(c.posX-this.posX, c.posY-this.posY));
-        int slopeX = c.posX-this.posX;
-        int slopeY = c.posY-this.posY;
-        return (slopeX*slopeX + slopeY*slopeY < (c.radius + this.radius) * (c.radius + this.radius));
+    boolean checkCollision(int x, int y, int radius) {
+        int slopeX = x-this.posX;
+        int slopeY = y-this.posY;
+        return (slopeX*slopeX + slopeY*slopeY < (radius + this.radius) * (radius + this.radius));
 //        return (Math.sqrt((c.posX-this.posX)*(c.posX-this.posX) + (c.posY-this.posY)*(c.posY-this.posY)) < c.radius + this.radius);
     }
 
     @Override
-    void handleCollision(Character c) {
+    void handleCollision(Character c, double deltaTime) {
         int slopeX = c.posX-this.posX;
         int slopeY = c.posY-this.posY;
+
+        double collisionPointX = this.posX + slopeX / getLength(slopeX, slopeY) * (this.radius + c.radius);
+        double collisionPointY = this.posY + slopeY / getLength(slopeX, slopeY) * (this.radius + c.radius);
+        c.posX = (int)(collisionPointX);
+        c.posY = (int)(collisionPointY);
+        c.body.setCenterX(c.posX);
+        c.body.setCenterY(c.posY);
 
         double cosineTheta = (slopeX*c.vX + slopeY*c.vY) / (getLength(slopeX, slopeY)*getLength(c.vX, c.vY));
         double distance = getLength(c.vX, c.vY) * cosineTheta;
@@ -230,9 +240,9 @@ class CircleObstacle extends Obstacle {
         c.vX -= 2*projectionX;
         c.vY -= 2*projectionY;
 
-        c.posX = (int)(c.body.getCenterX() + c.vX * 0.04);
-        c.posY = (int)(c.body.getCenterY() + c.vY * 0.04);
-        c.body.setCenterX(c.posX);
-        c.body.setCenterY(c.posY);
+//        c.posX = (int)(c.body.getCenterX() + c.vX * 0.04);
+//        c.posY = (int)(c.body.getCenterY() + c.vY * 0.04);
+//        c.body.setCenterX(c.posX);
+//        c.body.setCenterY(c.posY);
     }
 }
