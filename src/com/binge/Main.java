@@ -52,8 +52,11 @@ public class Main extends Application {
         Coin coin4 = new Coin(pane, 300, 360, 10, 10);
         items.add(coin4);
 
-        Magnifier mag1 = new Magnifier(pane, 400, 400, 10);
+        SizeShifter mag1 = new SizeShifter(pane, 400, 400, 10, 10);
         items.add(mag1);
+
+        SizeShifter mag2 = new SizeShifter(pane, 480, 400, 10, -10);
+        items.add(mag2);
 
 //        RectangleObstacle obs4 = new RectangleObstacle(100, 150, 100, 100);
 //        obs4.body.setFill(Color.YELLOW);

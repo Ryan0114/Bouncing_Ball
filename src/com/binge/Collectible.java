@@ -40,3 +40,25 @@ class Coin extends Collectible {
         System.out.println(c.coins);
     }
 }
+
+
+class SizeShifter extends Collectible {
+    int duration, increment;
+
+    SizeShifter(Pane pane, double posX, double posY, int radius, int increment) {
+        super(posX, posY, radius);
+        this.duration = 15;
+        this.increment = increment;
+        if (this.increment < 0) hitbox = new CircleObstacle(pane, posX, posY, radius, Color.RED);
+        else hitbox = new CircleObstacle(pane, posX, posY, radius, Color.BLUE);
+    }
+
+    @Override
+    public void handleCollision(Character c) {
+        c.radius += this.increment;
+        c.body.setRadius(c.radius);
+        hitbox.color = Color.TRANSPARENT;
+        hitbox.body.setFill(hitbox.color);
+        hitbox.body.setStroke(Color.TRANSPARENT);
+    }
+}
