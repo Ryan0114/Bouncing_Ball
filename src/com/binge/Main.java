@@ -118,7 +118,7 @@ public class Main extends Application {
                     redBall.v.setX(MAX_MOVE_SPEED);
                 }
                 if (redBall.v.getX() < -MAX_MOVE_SPEED) {
-                    redBall.v.setY(-MAX_MOVE_SPEED);
+                    redBall.v.setX(-MAX_MOVE_SPEED);
                 }
 
                 boolean collision = false;
