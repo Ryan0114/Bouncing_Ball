@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 abstract class Collectible {
     Point2D pos;
     int radius;
+    CircleObstacle hitbox;
 
     Collectible(double posX, double posY, int radius) {
         this.pos = new Point2D(posX, posY);
@@ -23,7 +24,6 @@ abstract class Collectible {
 
 class Coin extends Collectible {
     int value;
-    CircleObstacle hitbox;
 
     Coin(Pane pane, double posX, double posY, int radius, int value) {
         super(posX, posY, radius);

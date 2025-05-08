@@ -40,19 +40,31 @@ public class Main extends Application {
         CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
         obstacleArrayList.add(obs3);
 
-        Coin coin1 = new Coin(pane, 400, 450, 10, 10);
+        Coin coin1 = new Coin(pane, 300, 450, 10, 10);
         items.add(coin1);
+
+        Coin coin2 = new Coin(pane, 300, 420, 10, 10);
+        items.add(coin2);
+
+        Coin coin3 = new Coin(pane, 300, 390, 10, 10);
+        items.add(coin3);
+
+        Coin coin4 = new Coin(pane, 300, 360, 10, 10);
+        items.add(coin4);
+
+        Magnifier mag1 = new Magnifier(pane, 400, 400, 10);
+        items.add(mag1);
 
 //        RectangleObstacle obs4 = new RectangleObstacle(100, 150, 100, 100);
 //        obs4.body.setFill(Color.YELLOW);
 //        pane.getChildren().add(obs4.body);
 //        obstacleArrayList.add(obs4);
 
-        Rectangle rectangle = new Rectangle(250, 300, 200, 150);
-        Circle circle = new Circle(350, 425, 50);
-
-        Obstacle cutoff = new CutOffObstacle(pane, rectangle, circle, Color.LIGHTBLUE);
-        obstacleArrayList.add(cutoff);
+//        Rectangle rectangle = new Rectangle(250, 300, 200, 150);
+//        Circle circle = new Circle(350, 425, 50);
+//
+//        Obstacle cutoff = new CutOffObstacle(pane, rectangle, circle, Color.LIGHTBLUE);
+//        obstacleArrayList.add(cutoff);
 
         Scene scene = new Scene(pane, 600, 600);
 
