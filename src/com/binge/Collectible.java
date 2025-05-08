@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 abstract class Collectible {
     Point2D pos;
     int radius;
+    CircleObstacle hitbox;
 
     Collectible(double posX, double posY, int radius) {
         this.pos = new Point2D(posX, posY);
@@ -23,7 +24,6 @@ abstract class Collectible {
 
 class Coin extends Collectible {
     int value;
-    CircleObstacle hitbox;
 
     Coin(Pane pane, double posX, double posY, int radius, int value) {
         super(posX, posY, radius);
@@ -38,5 +38,27 @@ class Coin extends Collectible {
         hitbox.body.setFill(hitbox.color);
         hitbox.body.setStroke(Color.TRANSPARENT);
         System.out.println(c.coins);
+    }
+}
+
+
+class SizeShifter extends Collectible {
+    int duration, increment;
+
+    SizeShifter(Pane pane, double posX, double posY, int radius, int increment) {
+        super(posX, posY, radius);
+        this.duration = 15;
+        this.increment = increment;
+        if (this.increment < 0) hitbox = new CircleObstacle(pane, posX, posY, radius, Color.RED);
+        else hitbox = new CircleObstacle(pane, posX, posY, radius, Color.BLUE);
+    }
+
+    @Override
+    public void handleCollision(Character c) {
+        c.radius += this.increment;
+        c.body.setRadius(c.radius);
+        hitbox.color = Color.TRANSPARENT;
+        hitbox.body.setFill(hitbox.color);
+        hitbox.body.setStroke(Color.TRANSPARENT);
     }
 }
