@@ -22,8 +22,9 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         Pane pane = new Pane();
 
-        ArrayList<Obstacle> obstacleArrayList = new ArrayList<Obstacle>();
-        ArrayList<Character> characterArrayList = new ArrayList<Character>();
+        ArrayList<Obstacle> obstacleArrayList = new ArrayList<>();
+        ArrayList<Character> characterArrayList = new ArrayList<>();
+        ArrayList<Collectible> items = new ArrayList<>();
 
         Character redBall = new Character(150, 50, 20, 50);
         redBall.body.setFill(Color.RED);
@@ -38,6 +39,9 @@ public class Main extends Application {
 
         CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
         obstacleArrayList.add(obs3);
+
+        Coin coin1 = new Coin(pane, 400, 450, 10, 10);
+        items.add(coin1);
 
 //        RectangleObstacle obs4 = new RectangleObstacle(100, 150, 100, 100);
 //        obs4.body.setFill(Color.YELLOW);
@@ -132,6 +136,15 @@ public class Main extends Application {
                     }
                 }
 
+                Iterator<Collectible> iterator = items.iterator();
+                while (iterator.hasNext()) {
+                    Collectible item = iterator.next();
+                    if (item.checkCollision(redBall)) {
+                        item.handleCollision(redBall);
+                        iterator.remove();
+                    }
+                }
+
                 // Update position
                 if (!collision) {
                     redBall.pos.setX(redBall.body.getCenterX() + redBall.v.getX() * deltaTime);
@@ -167,25 +180,6 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         Application.launch(Main.class, args);
-    }
-}
-
-class Character {
-    Point2D pos, v;
-    int radius;
-    double mass;
-    Circle body;
-    boolean movingLeft, movingRight, movingUp;
-
-    Character(double posX, double posY, int radius, double mass) {
-        this.pos = new Point2D(posX, posY);
-        this.v = new Point2D(0, 0);
-        this.radius = radius;
-        this.mass = mass;
-        this.movingLeft = false;
-        this.movingRight = false;
-        this.movingUp = false;
-        body = new Circle(posX, posY, radius);
     }
 }
 
