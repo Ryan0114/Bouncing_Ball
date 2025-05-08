@@ -30,16 +30,13 @@ public class Main extends Application {
         pane.getChildren().add(redBall.body);
         characterArrayList.add(redBall);
 
-        CircleObstacle obs1 = new CircleObstacle(145, 200, 20, Color.GRAY);
-        pane.getChildren().add(obs1.body);
+        CircleObstacle obs1 = new CircleObstacle(pane, 145, 200, 20, Color.GRAY);
         obstacleArrayList.add(obs1);
 
-        CircleObstacle obs2 = new CircleObstacle(40, 150, 30, Color.GRAY);
-        pane.getChildren().add(obs2.body);
+        CircleObstacle obs2 = new CircleObstacle(pane, 40, 150, 30, Color.GRAY);
         obstacleArrayList.add(obs2);
 
-        CircleObstacle obs3 = new CircleObstacle(250, 170, 40, Color.GRAY);
-        pane.getChildren().add(obs3.body);
+        CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
         obstacleArrayList.add(obs3);
 
 //        RectangleObstacle obs4 = new RectangleObstacle(100, 150, 100, 100);
@@ -47,18 +44,11 @@ public class Main extends Application {
 //        pane.getChildren().add(obs4.body);
 //        obstacleArrayList.add(obs4);
 
-        Rectangle rectangle = new Rectangle(50, 50, 200, 150);
-        rectangle.setFill(Color.LIGHTBLUE);
+        Rectangle rectangle = new Rectangle(250, 300, 200, 150);
+        Circle circle = new Circle(350, 425, 50);
 
-        // Create the circle that will cut the rectangle
-        Circle circle = new Circle(150, 125, 50); // centerX, centerY, radius
-        circle.setFill(Color.TRANSPARENT); // Circle fill doesn't matter; subtraction determines the hole
-
-        // Subtract the circle from the rectangle
-        Shape cutout = Shape.subtract(rectangle, circle);
-        cutout.setFill(Color.LIGHTBLUE);
-        cutout.setStroke(Color.BLACK); // Optional: add border to see edges
-        pane.getChildren().add(cutout);
+        Obstacle cutoff = new CutOffObstacle(pane, rectangle, circle, Color.LIGHTBLUE);
+        obstacleArrayList.add(cutoff);
 
         Scene scene = new Scene(pane, 600, 600);
 

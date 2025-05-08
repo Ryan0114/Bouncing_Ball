@@ -1,11 +1,12 @@
 package com.binge;
 
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.*;
 
 public abstract class Obstacle {
     Point2D pos;
+    Shape body;
     private Color color;
 
     abstract boolean checkCollision(Point2D p, int radius);
@@ -16,11 +17,12 @@ class CircleObstacle extends Obstacle {
     private int radius;
     Circle body;
 
-    CircleObstacle(double posX, double posY, int radius, Color color) {
+    CircleObstacle(Pane pane, double posX, double posY, int radius, Color color) {
         pos = new Point2D(posX, posY);
         this.radius = radius;
         this.body = new Circle(posX, posY, radius);
         this.body.setFill(color);
+        pane.getChildren().add(this.body);
     }
 
     @Override
@@ -56,13 +58,14 @@ class CircleObstacle extends Obstacle {
 
 class RectangleObstacle extends Obstacle {
     private int width, height;
-    Rectangle body;
 
-    RectangleObstacle(double posX, double posY, int width, int height) {
+    RectangleObstacle(Pane pane, double posX, double posY, int width, int height, Color color) {
         this.pos = new Point2D(posX, posY);
         this.width = width;
         this.height = height;
         body = new Rectangle((int)posX, (int)posY, width, height);
+        this.body.setFill(color);
+        pane.getChildren().add(this.body);
     }
 
 
@@ -102,5 +105,24 @@ class RectangleObstacle extends Obstacle {
         c.pos.setY((int) (c.body.getCenterY() + c.v.getY() * deltaTime));
         c.body.setCenterX(c.pos.getX());
         c.body.setCenterY(c.pos.getY());
+    }
+}
+
+class CutOffObstacle extends Obstacle {
+    Shape body;
+
+    CutOffObstacle(Pane pane, Shape main, Shape cut, Color color) {
+        this.body = Shape.subtract(main, cut);
+        this.body.setFill(color);
+        this.body.setStroke(Color.BLACK);
+        pane.getChildren().add(this.body);
+    }
+
+    boolean checkCollision(Point2D p, int radius) {
+        return false;
+    }
+
+    void handleCollision(Character c, double deltaTime) {
+
     }
 }
