@@ -7,7 +7,7 @@ import javafx.scene.shape.*;
 public abstract class Obstacle {
     Point2D pos;
     Shape body;
-    private Color color;
+    Color color;
 
     abstract boolean checkCollision(Point2D p, int radius);
     abstract void handleCollision(Character c, double deltaTime);
@@ -22,6 +22,7 @@ class CircleObstacle extends Obstacle {
         this.radius = radius;
         this.body = new Circle(posX, posY, radius);
         this.body.setFill(color);
+        this.body.setStroke(Color.BLACK);
         pane.getChildren().add(this.body);
     }
 
