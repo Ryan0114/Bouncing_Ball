@@ -3,6 +3,8 @@ package com.binge;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -13,32 +15,37 @@ import java.util.*;
 public class Main extends Application {
 
     // Physics constants
-    private static final double GRAVITY = 980;          // pixels per second squared
+    public static final double GRAVITY = 980;          // pixels per second squared
     private static final double MOVE_ACCELERATION = 600; // horizontal acceleration, pixels per second squared
     private static final double MAX_MOVE_SPEED = 300;    // maximum horizontal speed
     private static final double FRAME_DURATION = 1e9;   // 1 second in nanoseconds
 
     @Override
     public void start(Stage stage) throws Exception {
-        Pane pane = new Pane();
+        Canvas canvas = new Canvas(600, 600);
+
+        Pane pane = new Pane(canvas);
+
+        GraphicsContext gc = canvas.getGraphicsContext2D();
 
         ArrayList<Obstacle> obstacleArrayList = new ArrayList<>();
         ArrayList<Character> characterArrayList = new ArrayList<>();
         ArrayList<Collectible> items = new ArrayList<>();
+        ArrayList<Displacer> disp = new ArrayList<>();
 
         Character redBall = new Character(150, 50, 20, 50);
         redBall.body.setFill(Color.RED);
         pane.getChildren().add(redBall.body);
         characterArrayList.add(redBall);
 
-        CircleObstacle obs1 = new CircleObstacle(pane, 145, 200, 20, Color.GRAY);
-        obstacleArrayList.add(obs1);
-
-        CircleObstacle obs2 = new CircleObstacle(pane, 40, 150, 30, Color.GRAY);
-        obstacleArrayList.add(obs2);
-
-        CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
-        obstacleArrayList.add(obs3);
+//        CircleObstacle obs1 = new CircleObstacle(pane, 145, 200, 20, Color.GRAY);
+//        obstacleArrayList.add(obs1);
+//
+//        CircleObstacle obs2 = new CircleObstacle(pane, 40, 150, 30, Color.GRAY);
+//        obstacleArrayList.add(obs2);
+//
+//        CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
+//        obstacleArrayList.add(obs3);
 
         Coin coin1 = new Coin(pane, 300, 450, 10, 10);
         items.add(coin1);
@@ -57,6 +64,9 @@ public class Main extends Application {
 
         SizeShifter mag2 = new SizeShifter(pane, 480, 400, 10, -10);
         items.add(mag2);
+
+        GrapplePoint grap1 = new GrapplePoint(pane, 300, 500, 200);
+        disp.add(grap1);
 
 //        RectangleObstacle obs4 = new RectangleObstacle(100, 150, 100, 100);
 //        obs4.body.setFill(Color.YELLOW);
@@ -87,6 +97,9 @@ public class Main extends Application {
             if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
                 redBall.movingUp = true;
             }
+            if (event.getCode() == KeyCode.SPACE) {
+                redBall.specialTransport = true;
+            }
         });
 
         // Set up key released
@@ -100,6 +113,9 @@ public class Main extends Application {
             if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
                 redBall.movingUp = false;
             }
+            if (event.getCode() == KeyCode.SPACE) {
+                redBall.specialTransport = false;
+            }
         });
 
         // Animation timer
@@ -108,15 +124,17 @@ public class Main extends Application {
 
             @Override
             public void handle(long now) {
+                gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
                 if (lastUpdate < 0) {
                     lastUpdate = now;
                     return;
                 }
 
-//                double deltaTime = (now - lastUpdate) / FRAME_DURATION; // seconds
-                double deltaTime = 1 / 60.0;
+                double deltaTime = (now - lastUpdate) / FRAME_DURATION; // seconds
+//                double deltaTime = 1 / 60.0;
                 lastUpdate = now;
-
+                
                 // Update vertical velocity (gravity)
                 redBall.v.add(0, GRAVITY * deltaTime);
 
@@ -133,12 +151,12 @@ public class Main extends Application {
                 }
 
                 // Limit the maximum horizontal speed
-                if (redBall.v.getX() > MAX_MOVE_SPEED) {
-                    redBall.v.setX(MAX_MOVE_SPEED);
-                }
-                if (redBall.v.getX() < -MAX_MOVE_SPEED) {
-                    redBall.v.setX(-MAX_MOVE_SPEED);
-                }
+//                if (redBall.v.getX() > MAX_MOVE_SPEED) {
+//                    redBall.v.setX(MAX_MOVE_SPEED);
+//                }
+//                if (redBall.v.getX() < -MAX_MOVE_SPEED) {
+//                    redBall.v.setX(-MAX_MOVE_SPEED);
+//                }
 
                 boolean collision = false;
                 for (Obstacle obs : obstacleArrayList) {
@@ -160,6 +178,20 @@ public class Main extends Application {
                     }
                 }
 
+                for (Displacer d : disp) {
+                    if (d.checkCollision(redBall)) {
+                        if (d instanceof GrapplePoint gp) {
+                            if (!gp.cooldown) drawLine(gc, redBall.pos.x, redBall.pos.y, gp.pos.x, gp.pos.y);
+//                            if (!((GrapplePoint) d).activate && redBall.specialTransport) {
+                            if (redBall.specialTransport && !gp.cooldown) {
+                                d.handleCollision(redBall);
+//                                redBall.v.add(0, -GRAVITY * deltaTime);
+                            }
+                        }
+                    }
+                }
+
+
                 // Update position
                 if (!collision) {
                     redBall.pos.setX(redBall.body.getCenterX() + redBall.v.getX() * deltaTime);
@@ -171,7 +203,7 @@ public class Main extends Application {
                 // Ground collision
                 if (redBall.body.getCenterY() + redBall.body.getRadius() > pane.getHeight()) {
                     redBall.body.setCenterY(pane.getHeight() - redBall.body.getRadius());
-                    redBall.v.setY(-(redBall.v.getY() - 100));
+                    redBall.v.setY(-(redBall.v.getY() - 150));
                 }
                 if (redBall.body.getCenterY() - redBall.body.getRadius() < 0) {
                     redBall.body.setCenterY(redBall.body.getRadius());
@@ -191,6 +223,12 @@ public class Main extends Application {
             }
         };
         timer.start();
+    }
+
+    private void drawLine(GraphicsContext gc, double x0, double y0, double x1, double y1) {
+        gc.setStroke(Color.RED);  // Set line color
+        gc.setLineWidth(2);       // Set line thickness
+        gc.strokeLine(x0, y0, x1, y1);  // Draw line
     }
 
     public static void main(String[] args) {

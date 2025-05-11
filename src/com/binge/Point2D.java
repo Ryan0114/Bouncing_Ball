@@ -41,4 +41,12 @@ public class Point2D {
     double dot(Point2D p) {
         return this.x * p.x + this.y * p.y;
     }
+
+    Point2D normalize() {
+        return new Point2D(this.x / this.magnitude(), this.y / this.magnitude());
+    }
+
+    Point2D scale(double s) {
+        return new Point2D(this.x * s , this.y * s);
+    }
 }

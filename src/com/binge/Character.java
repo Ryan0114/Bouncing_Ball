@@ -7,7 +7,7 @@ public class Character {
     int radius;
     double mass;
     Circle body;
-    boolean movingLeft, movingRight, movingUp;
+    boolean movingLeft, movingRight, movingUp, specialTransport;
     int coins;
 
     Character(double posX, double posY, int radius, double mass) {
@@ -19,6 +19,7 @@ public class Character {
         this.movingRight = false;
         this.movingUp = false;
         this.coins = 0;
-        body = new Circle(posX, posY, radius);
+        this.body = new Circle(posX, posY, radius);
+        this.specialTransport = false;
     }
 }
