@@ -41,7 +41,6 @@ class Coin extends Collectible {
     }
 }
 
-
 class SizeShifter extends Collectible {
     int duration, increment;
 
