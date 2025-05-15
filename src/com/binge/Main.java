@@ -1,6 +1,7 @@
 package com.binge;
 
 import javafx.animation.AnimationTimer;
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -10,6 +11,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
 import java.util.*;
 
 public class Main extends Application {
@@ -17,12 +20,13 @@ public class Main extends Application {
     // Physics constants
     public static final double GRAVITY = 980;          // pixels per second squared
     private static final double MOVE_ACCELERATION = 600; // horizontal acceleration, pixels per second squared
-    private static final double MAX_MOVE_SPEED = 300;    // maximum horizontal speed
+    private static final double MAX_MOVE_SPEED = 1000;    // maximum horizontal speed
+    private static final double NATURAL_SPEED_LIM = 500;
     private static final double FRAME_DURATION = 1e9;   // 1 second in nanoseconds
 
     @Override
     public void start(Stage stage) throws Exception {
-        Canvas canvas = new Canvas(600, 600);
+        Canvas canvas = new Canvas(1200, 900);
 
         Pane pane = new Pane(canvas);
 
@@ -68,10 +72,8 @@ public class Main extends Application {
         GrapplePoint grap1 = new GrapplePoint(pane, 300, 500, 200);
         disp.add(grap1);
 
-//        RectangleObstacle obs4 = new RectangleObstacle(100, 150, 100, 100);
-//        obs4.body.setFill(Color.YELLOW);
-//        pane.getChildren().add(obs4.body);
-//        obstacleArrayList.add(obs4);
+        RectangleObstacle obs4 = new RectangleObstacle(pane, 100, 150, 100, 100, Color.GRAY);
+        obstacleArrayList.add(obs4);
 
 //        Rectangle rectangle = new Rectangle(250, 300, 200, 150);
 //        Circle circle = new Circle(350, 425, 50);
@@ -79,7 +81,7 @@ public class Main extends Application {
 //        Obstacle cutoff = new CutOffObstacle(pane, rectangle, circle, Color.LIGHTBLUE);
 //        obstacleArrayList.add(cutoff);
 
-        Scene scene = new Scene(pane, 600, 600);
+        Scene scene = new Scene(pane, 1200, 900);
 
         stage.setScene(scene);
         stage.setTitle("Ball");
@@ -95,7 +97,11 @@ public class Main extends Application {
                 redBall.movingRight = true;
             }
             if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
-                redBall.movingUp = true;
+                System.out.println(redBall.jumpCount);
+                if (redBall.jumpCount <= 2) {
+                    redBall.jumpCount++;
+                    redBall.movingUp = true;
+                }
             }
             if (event.getCode() == KeyCode.SPACE) {
                 redBall.specialTransport = true;
@@ -139,10 +145,10 @@ public class Main extends Application {
                 redBall.v.add(0, GRAVITY * deltaTime);
 
                 // Update horizontal velocity based on input
-                if (redBall.movingLeft) {
+                if (redBall.movingLeft && redBall.v.getX() > -NATURAL_SPEED_LIM) {
                     redBall.v.add(-MOVE_ACCELERATION * deltaTime, 0);
                 }
-                if (redBall.movingRight) {
+                if (redBall.movingRight && redBall.v.getX() <  NATURAL_SPEED_LIM) {
                     redBall.v.add(MOVE_ACCELERATION * deltaTime, 0);
                 }
                 if (redBall.movingUp) {
@@ -150,23 +156,26 @@ public class Main extends Application {
                     redBall.movingUp = false;
                 }
 
-                // Limit the maximum horizontal speed
-//                if (redBall.v.getX() > MAX_MOVE_SPEED) {
-//                    redBall.v.setX(MAX_MOVE_SPEED);
-//                }
-//                if (redBall.v.getX() < -MAX_MOVE_SPEED) {
-//                    redBall.v.setX(-MAX_MOVE_SPEED);
-//                }
+//                 Limit the maximum horizontal speed
+                if (redBall.v.getX() > MAX_MOVE_SPEED) {
+                    redBall.v.setX(MAX_MOVE_SPEED);
+                }
+                if (redBall.v.getX() < -MAX_MOVE_SPEED) {
+                    redBall.v.setX(-MAX_MOVE_SPEED);
+                }
+                if (redBall.v.getY() > MAX_MOVE_SPEED) {
+                    redBall.v.setY(MAX_MOVE_SPEED);
+                }
+                if (redBall.v.getY() < -MAX_MOVE_SPEED) {
+                    redBall.v.setY(-MAX_MOVE_SPEED);
+                }
 
-                boolean collision = false;
+
                 for (Obstacle obs : obstacleArrayList) {
-                    int newPosX = (int) (redBall.pos.getX() + redBall.v.getX() * deltaTime);
-                    int newPosY = (int) (redBall.pos.getY() + redBall.v.getY() * deltaTime);
-                    Point2D newPos = new Point2D(newPosX, newPosY);
-                    if (obs.checkCollision(newPos, redBall.radius)) {
-                        collision = true;
-                        obs.handleCollision(redBall, deltaTime);
-                    }
+                    double displacementX = redBall.v.getX() * deltaTime; // newPosX
+                    double displacementY = redBall.v.getY() * deltaTime; // newPosY
+//                    Point2D newPos = new Point2D(newPosX, newPosY);
+                    obs.checkCollision(redBall, displacementX, displacementY, deltaTime);
                 }
 
                 Iterator<Collectible> iterator = items.iterator();
@@ -193,17 +202,16 @@ public class Main extends Application {
 
 
                 // Update position
-                if (!collision) {
-                    redBall.pos.setX(redBall.body.getCenterX() + redBall.v.getX() * deltaTime);
-                    redBall.pos.setY(redBall.body.getCenterY() + redBall.v.getY() * deltaTime);
-                    redBall.body.setCenterX((int)redBall.pos.getX());
-                    redBall.body.setCenterY((int)redBall.pos.getY());
-                }
+                redBall.pos.setX(redBall.body.getCenterX() + redBall.v.getX() * deltaTime);
+                redBall.pos.setY(redBall.body.getCenterY() + redBall.v.getY() * deltaTime);
+                redBall.body.setCenterX((int)redBall.pos.getX());
+                redBall.body.setCenterY((int)redBall.pos.getY());
 
                 // Ground collision
                 if (redBall.body.getCenterY() + redBall.body.getRadius() > pane.getHeight()) {
                     redBall.body.setCenterY(pane.getHeight() - redBall.body.getRadius());
                     redBall.v.setY(-(redBall.v.getY() - 150));
+                    redBall.jumpCount = 0;
                 }
                 if (redBall.body.getCenterY() - redBall.body.getRadius() < 0) {
                     redBall.body.setCenterY(redBall.body.getRadius());

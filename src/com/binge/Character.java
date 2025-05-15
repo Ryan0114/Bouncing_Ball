@@ -4,7 +4,7 @@ import javafx.scene.shape.Circle;
 
 public class Character {
     Point2D pos, v;
-    int radius;
+    int radius, jumpCount;
     double mass;
     Circle body;
     boolean movingLeft, movingRight, movingUp, specialTransport;
@@ -21,5 +21,6 @@ public class Character {
         this.coins = 0;
         this.body = new Circle(posX, posY, radius);
         this.specialTransport = false;
+        this.jumpCount = 0;
     }
 }
