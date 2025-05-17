@@ -23,6 +23,7 @@ public class Main extends Application {
     private static final double MAX_MOVE_SPEED = 1000;    // maximum horizontal speed
     private static final double NATURAL_SPEED_LIM = 500;
     private static final double FRAME_DURATION = 1e9;   // 1 second in nanoseconds
+    private static final double FRICTION = 0.6;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -210,7 +211,7 @@ public class Main extends Application {
                     redBall.body.setCenterY((int) redBall.pos.getY());
                 } else {
                     System.out.println(redBall.v.getY());
-                    redBall.v = redBall.v.scale(0.5);
+                    redBall.v = redBall.v.scale(FRICTION);
                 }
 
                 // Ground collision
@@ -227,11 +228,11 @@ public class Main extends Application {
                 // Wall collisions (left and right bounds)
                 if (redBall.body.getCenterX() - redBall.body.getRadius() < 0) {
                     redBall.body.setCenterX(redBall.body.getRadius());
-                    redBall.v.setX(-redBall.v.getX()*0.8);
+                    redBall.v.setX(-redBall.v.getX()*FRICTION);
                 }
                 if (redBall.body.getCenterX() + redBall.body.getRadius() > pane.getWidth()) {
                     redBall.body.setCenterX(pane.getWidth() - redBall.body.getRadius());
-                    redBall.v.setX(-redBall.v.getX()*0.8);
+                    redBall.v.setX(-redBall.v.getX()*FRICTION);
                 }
                 //                System.out.println(c.pos.getX() + " " + c.pos.getY());
             }
