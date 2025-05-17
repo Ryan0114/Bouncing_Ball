@@ -42,14 +42,14 @@ public class Main extends Application {
         pane.getChildren().add(redBall.body);
         characterArrayList.add(redBall);
 
-//        CircleObstacle obs1 = new CircleObstacle(pane, 145, 200, 20, Color.GRAY);
-//        obstacleArrayList.add(obs1);
-//
-//        CircleObstacle obs2 = new CircleObstacle(pane, 40, 150, 30, Color.GRAY);
-//        obstacleArrayList.add(obs2);
-//
-//        CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
-//        obstacleArrayList.add(obs3);
+        CircleObstacle obs1 = new CircleObstacle(pane, 145, 200, 20, Color.GRAY);
+        obstacleArrayList.add(obs1);
+
+        CircleObstacle obs2 = new CircleObstacle(pane, 40, 150, 30, Color.GRAY);
+        obstacleArrayList.add(obs2);
+
+        CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
+        obstacleArrayList.add(obs3);
 
         Coin coin1 = new Coin(pane, 300, 450, 10, 10);
         items.add(coin1);
@@ -69,10 +69,10 @@ public class Main extends Application {
         SizeShifter mag2 = new SizeShifter(pane, 480, 400, 10, -10);
         items.add(mag2);
 
-        GrapplePoint grap1 = new GrapplePoint(pane, 300, 500, 200);
+        GrapplePoint grap1 = new GrapplePoint(pane, 300, 500, 500);
         disp.add(grap1);
 
-        RectangleObstacle obs4 = new RectangleObstacle(pane, 100, 150, 100, 100, Color.GRAY);
+        RectangleObstacle obs4 = new RectangleObstacle(pane, 900, 400, 200, 100, Color.GRAY);
         obstacleArrayList.add(obs4);
 
 //        Rectangle rectangle = new Rectangle(250, 300, 200, 150);
@@ -97,7 +97,7 @@ public class Main extends Application {
                 redBall.movingRight = true;
             }
             if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
-                System.out.println(redBall.jumpCount);
+//                System.out.println(redBall.jumpCount);
                 if (redBall.jumpCount <= 2) {
                     redBall.jumpCount++;
                     redBall.movingUp = true;
@@ -170,12 +170,13 @@ public class Main extends Application {
                     redBall.v.setY(-MAX_MOVE_SPEED);
                 }
 
-
+                boolean collide = false;
                 for (Obstacle obs : obstacleArrayList) {
-                    double displacementX = redBall.v.getX() * deltaTime; // newPosX
-                    double displacementY = redBall.v.getY() * deltaTime; // newPosY
-//                    Point2D newPos = new Point2D(newPosX, newPosY);
-                    obs.checkCollision(redBall, displacementX, displacementY, deltaTime);
+                    // predict the next position based on current velocity
+                    double displacementX = redBall.v.getX() * deltaTime;
+                    double displacementY = redBall.v.getY() * deltaTime;
+                    // use the predicted position to check collision to avoid multiple collisions at once
+                    collide = collide || obs.checkCollision(redBall, displacementX, displacementY, deltaTime);
                 }
 
                 Iterator<Collectible> iterator = items.iterator();
@@ -202,10 +203,15 @@ public class Main extends Application {
 
 
                 // Update position
-                redBall.pos.setX(redBall.body.getCenterX() + redBall.v.getX() * deltaTime);
-                redBall.pos.setY(redBall.body.getCenterY() + redBall.v.getY() * deltaTime);
-                redBall.body.setCenterX((int)redBall.pos.getX());
-                redBall.body.setCenterY((int)redBall.pos.getY());
+                if (!collide) {
+                    redBall.pos.setX(redBall.body.getCenterX() + redBall.v.getX() * deltaTime);
+                    redBall.pos.setY(redBall.body.getCenterY() + redBall.v.getY() * deltaTime);
+                    redBall.body.setCenterX((int) redBall.pos.getX());
+                    redBall.body.setCenterY((int) redBall.pos.getY());
+                } else {
+                    System.out.println(redBall.v.getY());
+                    redBall.v = redBall.v.scale(0.5);
+                }
 
                 // Ground collision
                 if (redBall.body.getCenterY() + redBall.body.getRadius() > pane.getHeight()) {

@@ -10,7 +10,7 @@ public abstract class Obstacle {
     Shape body;
     Color color;
 
-    abstract void checkCollision(Character c, double dispX, double dispY, double deltaTime);
+    abstract boolean checkCollision(Character c, double dispX, double dispY, double deltaTime);
     abstract void handleCollision(Character c, double deltaTime);
 }
 
@@ -28,30 +28,14 @@ class CircleObstacle extends Obstacle {
     }
 
     @Override
-    void checkCollision(Character c, double dispX, double dispY, double deltaTime) {
+    boolean checkCollision(Character c, double dispX, double dispY, double deltaTime) {
         double slopeX = c.pos.getX()+dispX-this.pos.getX();
         double slopeY = c.pos.getY()+dispY-this.pos.getY();
         if (slopeX*slopeX + slopeY*slopeY < (c.radius + this.radius) * (c.radius + this.radius)) {
-            c.jumpCount = 0;
-            slopeX = c.pos.getX()-this.pos.getX();
-            slopeY = c.pos.getY()-this.pos.getY();
-            Point2D slope = new Point2D(slopeX, slopeY);
-
-            double collisionPointX = this.pos.getX() + slope.getX() / slope.magnitude() * (this.radius + c.radius);
-            double collisionPointY = this.pos.getY() + slope.getY() / slope.magnitude() * (this.radius + c.radius);
-            c.pos.setX(collisionPointX);
-            c.pos.setY(collisionPointY);
-            c.body.setCenterX((int)c.pos.getX());
-            c.body.setCenterY((int)c.pos.getY());
-
-            double cosineTheta = slope.dot(c.v) / (slope.magnitude()*c.v.magnitude());
-            double distance = c.v.magnitude() * cosineTheta;
-
-            double projectionX = slopeX / slope.magnitude() * distance;
-            double projectionY = slopeY / slope.magnitude() * distance;
-
-            c.v.add(-2*projectionX, -2*projectionY);
+            this.handleCollision(c, deltaTime);
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -106,24 +90,28 @@ class RectangleObstacle extends Obstacle {
 
 
     @Override
-    void checkCollision(Character c, double dispX, double dispY, double deltaTime) {
+    boolean checkCollision(Character c, double dispX, double dispY, double deltaTime) {
         if (this.pos.getX()+this.cornerRadius <= c.pos.getX()+dispX && c.pos.getX()+dispX <= this.pos.getX()+this.width-this.cornerRadius
             && Math.abs(c.pos.getY()+dispY-(this.pos.getY()+this.height/2.0)) < c.radius + this.height/2.0) {
-//            System.out.println("CollisionX");
             c.v.setY(-c.v.getY());
             c.jumpCount = 0;
+            if (Math.abs(c.v.y) < 150) {
+                c.v.y = 0;
+                c.pos.y = this.pos.y - c.radius - 3;
+            }
+            return true;
         } else if (this.pos.getY()+this.cornerRadius <= c.pos.getY()+dispY && c.pos.getY()+dispY <= this.pos.getY()+this.height-this.cornerRadius
                 && Math.abs(c.pos.getX()+dispX-(this.pos.getX()+this.width/2.0)) < c.radius + this.width/2.0) {
-//            System.out.println("CollisionY");
             c.v.setX(-c.v.getX());
             c.jumpCount = 0;
-//        } else return p.getDistance(lu) < radius || p.getDistance(ld) < radius || p.getDistance(ru) < radius || p.getDistance(rd) < radius;
+            return true;
         } else {
             boolean collide = false;
             for (CircleObstacle corner: corners) {
-                corner.checkCollision(c, dispX, dispY, deltaTime);
+                return corner.checkCollision(c, dispX, dispY, deltaTime);
             }
         }
+        return false;
     }
 
 
