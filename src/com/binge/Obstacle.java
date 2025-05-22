@@ -3,136 +3,249 @@ package com.binge;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
+import javafx.scene.transform.Rotate; // Import Rotate
+
 import java.util.*;
 
+
 public abstract class Obstacle {
-    Point2D pos;
+    Point2D pos; // For CircleObstacle, this is center. For RectangleObstacle, this will be center.
     Shape body;
     Color color;
+    double epsilon = 1e-5; // Small value to prevent sticking
 
     abstract boolean checkCollision(Character c, double dispX, double dispY, double deltaTime);
-    abstract void handleCollision(Character c, double deltaTime);
+    // Original handleCollision is specific to how checkCollision determines the interaction.
+    // For more complex shapes like rotated rectangles, it's often better for checkCollision
+    // to determine the normal and penetration, then call a more generic handler.
+    // abstract void handleCollision(Character c, double deltaTime); // This might be removed or changed
 }
 
 class CircleObstacle extends Obstacle {
-    private int radius;
-    Circle body;
+    private final int radius;
+    // Circle body is already a field in its JavaFX shape representation
 
     CircleObstacle(Pane pane, double posX, double posY, int radius, Color color) {
-        pos = new Point2D(posX, posY);
+        this.pos = new Point2D(posX, posY); // Center of the circle
         this.radius = radius;
-        this.body = new Circle(posX, posY, radius);
+        this.body = new Circle(posX, posY, radius); // JavaFX Circle
         this.body.setFill(color);
         this.body.setStroke(Color.BLACK);
+        this.color = color; // Store color if needed for hitbox manipulation (like in Coin)
         pane.getChildren().add(this.body);
     }
 
     @Override
     boolean checkCollision(Character c, double dispX, double dispY, double deltaTime) {
-        double slopeX = c.pos.getX()+dispX-this.pos.getX();
-        double slopeY = c.pos.getY()+dispY-this.pos.getY();
-        if (slopeX*slopeX + slopeY*slopeY < (c.radius + this.radius) * (c.radius + this.radius)) {
-            this.handleCollision(c, deltaTime);
+        // Predicted character center
+        Point2D predictedCharPos = new Point2D(c.pos.getX() + dispX, c.pos.getY() + dispY);
+
+        double distSq = predictedCharPos.getDistance(this.pos) * predictedCharPos.getDistance(this.pos);
+        double combinedRadius = c.radius + this.radius;
+
+        if (distSq < combinedRadius * combinedRadius) {
+            // Collision detected
+            Point2D collisionNormal = predictedCharPos.subtract(this.pos).normalize();
+            double penetration = combinedRadius - Math.sqrt(distSq);
+            handleCollision(c, collisionNormal, penetration, deltaTime);
             return true;
         }
         return false;
     }
 
-    @Override
-    void handleCollision(Character c, double deltaTime) {
+    // New handleCollision signature for CircleObstacle
+    void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
         c.jumpCount = 0;
-        double slopeX = c.pos.getX()-this.pos.getX();
-        double slopeY = c.pos.getY()-this.pos.getY();
-        Point2D slope = new Point2D(slopeX, slopeY);
 
-        double collisionPointX = this.pos.getX() + slope.getX() / slope.magnitude() * (this.radius + c.radius);
-        double collisionPointY = this.pos.getY() + slope.getY() / slope.magnitude() * (this.radius + c.radius);
-        c.pos.setX(collisionPointX);
-        c.pos.setY(collisionPointY);
-        c.body.setCenterX((int)c.pos.getX());
-        c.body.setCenterY((int)c.pos.getY());
+        // Position correction
+        c.pos.add(normal.getX() * (penetration + epsilon), normal.getY() * (penetration + epsilon));
+        c.body.setCenterX(c.pos.getX());
+        c.body.setCenterY(c.pos.getY());
 
-        double cosineTheta = slope.dot(c.v) / (slope.magnitude()*c.v.magnitude());
-        double distance = c.v.magnitude() * cosineTheta;
+        // Velocity reflection (simple bounce for circles)
+        double vDotN = c.v.dot(normal);
+        if (vDotN < 0) { // Moving into the obstacle
+            double restitution = Main.FRICTION; // Use global friction as restitution
+            c.v.add(-normal.getX() * (1 + restitution) * vDotN, -normal.getY() * (1 + restitution) * vDotN);
+        }
+    }
 
-        double projectionX = slopeX / slope.magnitude() * distance;
-        double projectionY = slopeY / slope.magnitude() * distance;
+    // This old method is not directly called from Main anymore if checkCollision handles it
+    // However, Collectible's Coin uses CircleObstacle for its hitbox, so we keep a form of it.
+    // We will remove the old abstract handleCollision from Obstacle class,
+    // and subclasses will implement their specific collision response.
+    // For this class, the specific collision response is now in the new handleCollision.
+    // The below is kept if any old direct calls were made, but should be phased out.
+    // @Override
+    void handleCollision(Character c, double deltaTime) {
+        // This version is less precise as it doesn't know the exact normal and penetration
+        // from checkCollision. It recalculates them.
+        c.jumpCount = 0;
+        Point2D slope = c.pos.subtract(this.pos); // Vector from obstacle center to character center
+        Point2D normalizedSlope = slope.normalize();
 
-        c.v.add(-2*projectionX, -2*projectionY);
+        // Correct position to be just outside the obstacle
+        double overlap = (c.radius + this.radius) - slope.magnitude();
+        if (overlap > 0) { // Ensure there's actual overlap before correcting
+            c.pos.add(normalizedSlope.getX() * (overlap + epsilon), normalizedSlope.getY() * (overlap + epsilon));
+        }
+        c.body.setCenterX(c.pos.getX());
+        c.body.setCenterY(c.pos.getY());
+
+        // Reflect velocity (as in original code)
+        double vDotSlope = c.v.dot(normalizedSlope);
+        // We only want to reflect if the velocity is towards the obstacle
+        if (vDotSlope < 0) {
+            c.v.add(-2 * normalizedSlope.getX() * vDotSlope, -2 * normalizedSlope.getY() * vDotSlope);
+        }
+        // Apply friction (scaling the entire velocity vector) - this might not be what you want after reflection.
+        // The main loop already scales velocity by FRICTION upon collision.
+        // c.v = c.v.scale(Main.FRICTION);
     }
 }
 
 class RectangleObstacle extends Obstacle {
-    private final int width, height;
-    final int cornerRadius = 5;
-    ArrayList<CircleObstacle> corners = new ArrayList<>();
+    private final double width, height;
+    private final double angle; // Angle in radians
 
-    RectangleObstacle(Pane pane, double posX, double posY, int width, int height, Color color) {
-        this.pos = new Point2D(posX, posY);
+    // Constructor updated for center position and angle
+    RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color) {
+        this.pos = new Point2D(centerX, centerY); // Store center position
         this.width = width;
         this.height = height;
-        body = new Rectangle((int)posX, (int)posY, width, height);
-        this.body.setFill(color);
-        pane.getChildren().add(this.body);
+        this.angle = Math.toRadians(angleDegrees);
+        this.color = color;
 
-        // 1 1      -1 1
-        // 1 -1     -1 -1
-        CircleObstacle temp_corner;
-        for (int i=1; i>=-1; i-=2) {
-            for (int j=1; j>=-1; j-=2) {
-                double cornerPosX = this.pos.x + (i-1)/(-2)*this.width + i* cornerRadius;
-                double cornerPosY = this.pos.y + (j-1)/(-2)*this.height + j* cornerRadius;
-                temp_corner = new CircleObstacle(pane, cornerPosX, cornerPosY, cornerRadius, Color.TRANSPARENT);
-                this.corners.add(temp_corner);
-            }
-        }
+        // Create a rectangle shape, position it so its center is at (0,0) for rotation, then translate
+        Rectangle rectShape = new Rectangle(-width / 2, -height / 2, width, height);
+        rectShape.setFill(this.color);
+        rectShape.setStroke(Color.BLACK);
+
+        // Apply rotation around the center of the rectangle
+        Rotate rotate = new Rotate(angleDegrees, 0, 0); // Rotate around its local center (0,0)
+
+        this.body = rectShape;
+        // Translate to the final position AFTER setting up rotation relative to its own center
+        this.body.setLayoutX(centerX);
+        this.body.setLayoutY(centerY);
+        this.body.getTransforms().addAll(rotate);
+
+        pane.getChildren().add(this.body);
     }
 
 
     @Override
     boolean checkCollision(Character c, double dispX, double dispY, double deltaTime) {
-        if (this.pos.getX()+this.cornerRadius <= c.pos.getX()+dispX && c.pos.getX()+dispX <= this.pos.getX()+this.width-this.cornerRadius
-            && Math.abs(c.pos.getY()+dispY-(this.pos.getY()+this.height/2.0)) < c.radius + this.height/2.0) {
-            c.v.setY(-c.v.getY());
-            c.jumpCount = 0;
-            if (Math.abs(c.v.y) < 150) {
-                c.v.y = 0;
-                c.pos.y = this.pos.y - c.radius - 3;
+        Point2D charPredPosWorld = new Point2D(c.pos.getX() + dispX, c.pos.getY() + dispY);
+
+        // Transform character's center to rectangle's local coordinate system
+        // 1. Translate charPredPosWorld so rectangle's center (this.pos) is the origin
+        Point2D charRelToRectCenter = charPredPosWorld.subtract(this.pos);
+
+        // 2. Rotate this relative position by -this.angle
+        Point2D charLocalPos = charRelToRectCenter.rotate(-this.angle);
+
+        // Now, perform collision check with an AABB centered at (0,0) with rect's width/height
+        double halfWidth = this.width / 2.0;
+        double halfHeight = this.height / 2.0;
+
+        // Find the closest point on the AABB (in local coords) to charLocalPos
+        double clampedX = Math.max(-halfWidth, Math.min(charLocalPos.getX(), halfWidth));
+        double clampedY = Math.max(-halfHeight, Math.min(charLocalPos.getY(), halfHeight));
+
+        Point2D closestPointLocal = new Point2D(clampedX, clampedY);
+        double distSq = charLocalPos.subtract(closestPointLocal).magnitude(); // Recalculate distance correctly
+        distSq *= distSq;
+
+
+        if (distSq < c.radius * c.radius) {
+            // Collision detected
+            double actualDistance = Math.sqrt(distSq);
+            double penetration = c.radius - actualDistance;
+
+            // Calculate collision normal (from rectangle towards circle)
+            // Normal in local coordinates (from closestPointLocal to charLocalPos)
+            Point2D normalLocal = charLocalPos.subtract(closestPointLocal).normalize();
+            if (actualDistance < epsilon) { // Character center is very close to/on closest point (e.g. inside)
+                // If charLocalPos is inside the AABB, clampedX/Y is charLocalPos.x/y.
+                // We need a robust way to find the normal.
+                // A common approach is to find the shallowest penetration axis.
+                // For simplicity here, if deep inside, push out along vector from rect center to char center (local).
+                // However, charLocalPos.subtract(closestPointLocal) should still give a direction.
+                // If distance is near zero because char center is ON the clamped point, it means
+                // char center might be inside.
+                // A better normal if inside: vector from charLocalPos to one of the AABB edges.
+                // Smallest overlap determines the normal.
+                // dx_pen = c.radius - (halfWidth - Math.abs(charLocalPos.getX())) -> this is for AABB vs AABB
+                // For Circle vs AABB, if charLocalPos is inside AABB, then normal is from charLocalPos to nearest edge.
+                // Let's assume charLocalPos.subtract(closestPointLocal).normalize() is mostly fine for now
+                // It points from the surface of the rectangle towards the center of the circle.
+                // If charLocalPos == closestPointLocal (center of circle is inside rectangle)
+                // the normal should be based on which "face" is closest to escape.
+                // This case is tricky. For now, if distSq is very small and positive, normalLocal is valid.
+                // If distSq is zero (char center on closest point), and that point is an edge, normal is outward from edge.
+                // If char center is *inside* the rectangle, distSq calculation would be 0 using this method
+                // because closestPointLocal would be charLocalPos. This needs refinement.
+
+                // Refined check for character center inside the rectangle (local coordinates)
+                if (Math.abs(charLocalPos.getX()) < halfWidth && Math.abs(charLocalPos.getY()) < halfHeight) {
+                    // Character center is inside the rectangle.
+                    // Find overlap with each side to determine shallowest penetration axis.
+                    double dx = halfWidth - Math.abs(charLocalPos.getX());
+                    double dy = halfHeight - Math.abs(charLocalPos.getY());
+
+                    if (dx < dy) {
+                        normalLocal = new Point2D(charLocalPos.getX() > 0 ? 1 : -1, 0);
+                        penetration = c.radius + dx; // penetration is radius + how much it's inside the halfwidth
+                    } else {
+                        normalLocal = new Point2D(0, charLocalPos.getY() > 0 ? 1 : -1);
+                        penetration = c.radius + dy;
+                    }
+                }
+                // else, the original normalLocal calculation is for when char center is outside.
             }
+
+
+            // Transform normal back to world coordinates by rotating it by this.angle
+            Point2D collisionNormalWorld = normalLocal.rotate(this.angle).normalize();
+
+            handleCollision(c, collisionNormalWorld, penetration, deltaTime);
             return true;
-        } else if (this.pos.getY()+this.cornerRadius <= c.pos.getY()+dispY && c.pos.getY()+dispY <= this.pos.getY()+this.height-this.cornerRadius
-                && Math.abs(c.pos.getX()+dispX-(this.pos.getX()+this.width/2.0)) < c.radius + this.width/2.0) {
-            c.v.setX(-c.v.getX());
-            c.jumpCount = 0;
-            return true;
-        } else {
-            boolean collide = false;
-            for (CircleObstacle corner: corners) {
-                return corner.checkCollision(c, dispX, dispY, deltaTime);
-            }
         }
         return false;
     }
 
+    // New handleCollision method for RectangleObstacle
+    void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
+        c.jumpCount = 0; // Reset jump on any collision with obstacle
 
-    @Override
-    void handleCollision(Character c, double deltaTime) {
-        if (this.pos.getX()+this.cornerRadius <= c.pos.getX() && c.pos.getX() <= this.pos.getX()+this.width-this.cornerRadius
-                && Math.abs(c.pos.getY()-(this.pos.getY()+this.height/2.0)) < c.radius + this.height/2.0) {
-            c.v.setY(-c.v.getY());
-        } else if (this.pos.getY()+this.cornerRadius <= c.pos.getY() && c.pos.getY() <= this.pos.getY()+this.height-this.cornerRadius
-                && Math.abs(c.pos.getX()-(this.pos.getX()+this.width/2.0)) < c.radius + this.width/2.0) {
-            c.v.setX(-c.v.getX());
-//        } else if (c.pos.getDistance(lu) < c.radius || c.pos.getDistance(ld) < c.radius || c.pos.getDistance(ru) < c.radius || c.pos.getDistance(rd) < c.radius) {
-////            c.v.setX(-c.v.getX());
-//            c.v.setY(-c.v.getY());
-//        }
-        }
-
-        c.pos.setX((int) (c.body.getCenterX() + c.v.getX() * deltaTime));
-        c.pos.setY((int) (c.body.getCenterY() + c.v.getY() * deltaTime));
+        // 1. Position Correction (move character out of penetration)
+        // Ensure penetration is positive
+        penetration = Math.max(0, penetration);
+        c.pos.add(normal.getX() * (penetration + epsilon), normal.getY() * (penetration + epsilon));
         c.body.setCenterX(c.pos.getX());
         c.body.setCenterY(c.pos.getY());
+
+        // 2. Velocity Adjustment for Sliding and Bounce
+        double vDotN = c.v.dot(normal);
+
+        if (vDotN < 0) { // Character is moving into the surface
+            double restitution = 0.5; // Low restitution for less bounce, more slide
+            double surfaceFrictionCoefficient = 0.01; // Friction for sliding along the surface
+
+            // Decompose velocity into normal and tangential components
+            Point2D vn = normal.scale(vDotN); // Normal component of velocity (points into surface)
+            Point2D vt = new Point2D(c.v.getX() - vn.getX(), c.v.getY() - vn.getY()); // Tangential component
+
+            // New velocity:
+            // Normal component: Reflects with restitution (bounce)
+            // Tangential component: Scaled by friction (slide)
+            double newVx = -vn.getX() * restitution + vt.getX() * (1.0 - surfaceFrictionCoefficient);
+            double newVy = -vn.getY() * restitution + vt.getY() * (1.0 - surfaceFrictionCoefficient);
+
+            c.v.setX(newVx);
+            c.v.setY(newVy);
+        }
     }
 }
 
@@ -146,11 +259,12 @@ class RectangleObstacle extends Obstacle {
 //        pane.getChildren().add(this.body);
 //    }
 //
-//    boolean checkCollision(Point2D p, int radius) {
+//    boolean checkCollision(Character c, double dispX, double dispY, double deltaTime) {
+//        // Complex collision for generic shapes, typically involves checking path intersections
+//        // or using libraries for this. For now, returning false.
 //        return false;
 //    }
 //
-//    void handleCollision(Character c, double deltaTime) {
-//
-//    }
+//    // No specific handleCollision defined for CutOffObstacle yet.
+//    // If it were to be used, it would need its own collision response.
 //}
