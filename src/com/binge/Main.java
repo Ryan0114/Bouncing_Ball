@@ -19,8 +19,13 @@ public class Main extends Application {
     private static final double MOVE_ACCELERATION = 600; // horizontal acceleration, pixels per second squared
     private static final double MAX_MOVE_SPEED = 1000;    // maximum horizontal speed
     private static final double NATURAL_SPEED_LIM = 500;
-    // FRAME_DURATION is not directly used with fixed timestep in the same way, but 1e9 is nanoseconds per second.
-    public static final double FRICTION = 0.6; // General friction, review its usaged
+    public static final double FRICTION = 0.6; 
+    
+    // containers
+    ArrayList<Obstacle> obstacles = new ArrayList<>();
+    ArrayList<Character> characters = new ArrayList<>();
+    ArrayList<Collectible> items = new ArrayList<>();
+    ArrayList<Displacer> displacers = new ArrayList<>();
 
     // For fixed timestep physics
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
@@ -34,48 +39,11 @@ public class Main extends Application {
 
         Pane pane = new Pane(canvas);
 
-        ArrayList<Obstacle> obstacleArrayList = new ArrayList<>();
-        ArrayList<Character> characterArrayList = new ArrayList<>(); // Not currently used beyond redBall
-        ArrayList<Collectible> items = new ArrayList<>();
-        ArrayList<Displacer> disp = new ArrayList<>();
+        StageLoader.loadStageFromFile("src/com/binge/Stages/1.in", pane, obstacles, items, displacers);
 
         Character redBall = new Character(150, 50, 20, 50);
         redBall.body.setFill(Color.RED);
         pane.getChildren().add(redBall.body);
-        // characterArrayList.add(redBall); // Only if managing multiple characters this way
-
-        CircleObstacle obs1 = new CircleObstacle(pane, 145, 200, 20, Color.GRAY);
-        obstacleArrayList.add(obs1);
-        CircleObstacle obs2 = new CircleObstacle(pane, 40, 150, 30, Color.GRAY);
-        obstacleArrayList.add(obs2);
-        CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
-        obstacleArrayList.add(obs3);
-
-        Coin coin1 = new Coin(pane, 300, 450, 10, 10);
-        items.add(coin1);
-        Coin coin2 = new Coin(pane, 300, 420, 10, 10);
-        items.add(coin2);
-        Coin coin3 = new Coin(pane, 300, 390, 10, 10);
-        items.add(coin3);
-        Coin coin4 = new Coin(pane, 300, 360, 10, 10);
-        items.add(coin4);
-
-        SizeShifter mag1 = new SizeShifter(pane, 400, 400, 10, 10);
-        items.add(mag1);
-        SizeShifter mag2 = new SizeShifter(pane, 480, 400, 10, -10);
-        items.add(mag2);
-
-        GrapplePoint grap1 = new GrapplePoint(pane, 300, 500, 500);
-        disp.add(grap1);
-
-        // RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color)
-        RectangleObstacle obs4 = new RectangleObstacle(pane, 1000, 650, 300, 50, 15.0, Color.BLUE);
-        obstacleArrayList.add(obs4);
-        RectangleObstacle obs5 = new RectangleObstacle(pane, 200, 700, 250, 50, -10.0, Color.GREEN);
-        obstacleArrayList.add(obs5);
-        RectangleObstacle floor = new RectangleObstacle(pane, 600, 880, 1200, 40, 0.0, Color.DARKGRAY); // Example floor
-        obstacleArrayList.add(floor);
-
 
         Scene scene = new Scene(pane, 1200, 900);
         stage.setScene(scene);
@@ -124,7 +92,7 @@ public class Main extends Application {
                 accumulator += frameDeltaTime;
 
                 while (accumulator >= FIXED_PHYSICS_DT) {
-                    updateGamePhysics(obstacleArrayList, items, disp, redBall, pane);
+                    updateGamePhysics(obstacles, items, displacers, redBall, pane);
                     accumulator -= FIXED_PHYSICS_DT;
                 }
 
@@ -143,7 +111,7 @@ public class Main extends Application {
         timer.start();
     }
 
-    private void updateGamePhysics(ArrayList<Obstacle> obstacleArrayList,
+    private void updateGamePhysics(ArrayList<Obstacle> obstacles,
                                    ArrayList<Collectible> items, ArrayList<Displacer> disp,
                                    Character redBall, Pane pane) {
 
@@ -167,7 +135,7 @@ public class Main extends Application {
 
         // 3. Collision Detection and Resolution with Obstacles
         boolean characterCollidedWithObstacle = false;
-        for (Obstacle obs : obstacleArrayList) {
+        for (Obstacle obs : obstacles) {
             double displacementX = redBall.v.getX() * Main.FIXED_PHYSICS_DT;
             double displacementY = redBall.v.getY() * Main.FIXED_PHYSICS_DT;
             if (obs.checkCollision(redBall, displacementX, displacementY, Main.FIXED_PHYSICS_DT)) {

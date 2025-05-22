@@ -3,7 +3,7 @@ package com.binge;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-abstract class Collectible {
+public abstract class Collectible {
     Point2D pos;
     int radius;
     CircleObstacle hitbox;
