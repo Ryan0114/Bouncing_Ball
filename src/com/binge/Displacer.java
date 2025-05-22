@@ -38,13 +38,11 @@ class GrapplePoint extends CircleObstacle implements Displacer {
         Point2D diff = new Point2D(diffX, diffY);
         c.v = diff.normalize().scale(this.speed);
 
-        if (diff.magnitude() < 50) {
-            this.cooldown = true;
-            PauseTransition cooldown = new PauseTransition(Duration.seconds(1));
-            cooldown.setOnFinished(e -> {
-                this.cooldown = false;
-            });
-            cooldown.play();
-        }
+        this.cooldown = true;
+        PauseTransition cooldown = new PauseTransition(Duration.seconds(1));
+        cooldown.setOnFinished(e -> {
+            this.cooldown = false;
+        });
+        cooldown.play();
     }
 }
