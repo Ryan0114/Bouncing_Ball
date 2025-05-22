@@ -7,7 +7,7 @@ import javafx.util.Duration;
 
 import static com.binge.Main.GRAVITY;
 
-interface Displacer {
+public interface Displacer {
     abstract public boolean checkCollision(Character c);
     abstract void handleCollision(Character c);
 }

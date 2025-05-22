@@ -39,43 +39,11 @@ public class Main extends Application {
 
         Pane pane = new Pane(canvas);
 
+        StageLoader.loadStageFromFile("src/com/binge/Stages/1.in", pane, obstacles, items, displacers);
+
         Character redBall = new Character(150, 50, 20, 50);
         redBall.body.setFill(Color.RED);
         pane.getChildren().add(redBall.body);
-        // characterArrayList.add(redBall); // Only if managing multiple characters this way
-
-        CircleObstacle obs1 = new CircleObstacle(pane, 145, 200, 20, Color.GRAY);
-        obstacles.add(obs1);
-        CircleObstacle obs2 = new CircleObstacle(pane, 40, 150, 30, Color.GRAY);
-        obstacles.add(obs2);
-        CircleObstacle obs3 = new CircleObstacle(pane, 250, 170, 40, Color.GRAY);
-        obstacles.add(obs3);
-
-        Coin coin1 = new Coin(pane, 300, 450, 10, 10);
-        items.add(coin1);
-        Coin coin2 = new Coin(pane, 300, 420, 10, 10);
-        items.add(coin2);
-        Coin coin3 = new Coin(pane, 300, 390, 10, 10);
-        items.add(coin3);
-        Coin coin4 = new Coin(pane, 300, 360, 10, 10);
-        items.add(coin4);
-
-        SizeShifter mag1 = new SizeShifter(pane, 400, 400, 10, 10);
-        items.add(mag1);
-        SizeShifter mag2 = new SizeShifter(pane, 480, 400, 10, -10);
-        items.add(mag2);
-
-        GrapplePoint grap1 = new GrapplePoint(pane, 300, 500, 500);
-        displacers.add(grap1);
-
-        // RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color)
-        RectangleObstacle obs4 = new RectangleObstacle(pane, 1000, 650, 300, 50, 15.0, Color.BLUE);
-        obstacles.add(obs4);
-        RectangleObstacle obs5 = new RectangleObstacle(pane, 200, 700, 250, 50, -10.0, Color.GREEN);
-        obstacles.add(obs5);
-        RectangleObstacle floor = new RectangleObstacle(pane, 600, 880, 1200, 40, 0.0, Color.DARKGRAY); // Example floor
-        obstacles.add(floor);
-
 
         Scene scene = new Scene(pane, 1200, 900);
         stage.setScene(scene);
