@@ -20,7 +20,7 @@ public class Main extends Application {
     private static final double MAX_MOVE_SPEED = 1000;    // maximum horizontal speed
     private static final double NATURAL_SPEED_LIM = 500;
     // FRAME_DURATION is not directly used with fixed timestep in the same way, but 1e9 is nanoseconds per second.
-    public static final double FRICTION = 0.6; // General friction, review its usage
+    public static final double FRICTION = 0.6; // General friction, review its usaged
 
     // For fixed timestep physics
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
