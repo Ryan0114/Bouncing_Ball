@@ -3,7 +3,6 @@ package com.binge;
 import java.io.*;
 import java.util.*;
 
-import com.sun.marlin.CollinearSimplifier;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
 
@@ -19,7 +18,7 @@ public class StageLoader {
                 if (line.isEmpty()) continue;
 
                 if (line.startsWith("stage")) {
-                    continue; // You can parse the stage number if needed
+                    continue;
                 } else if (line.equals("CircleObstacle") || line.equals("RectangleObstacle") || line.equals("Coin") ||
                         line.equals("SizeShifter") || line.equals("GrapplePoint")) {
                     section = line;
