@@ -32,7 +32,6 @@ public class StageLoader {
         pane.getChildren().add(customLevel);
 
         selectLevels.setOnAction(actionEvent -> {
-            System.out.println("Pressed");
             pane.getChildren().removeAll();
             loadSelectStage(pane, canvas);
         });
@@ -56,11 +55,16 @@ public class StageLoader {
         pane.getChildren().add(stage);
 
         stage.setOnAction(e -> {
-            loadStageFromFile(pane, canvas, "src/com/binge/Stages/1.in");
+            Main.redBall.currentStage = 1;
+            Main.redBall.currentSubstage = 1;
+            loadStageFromFile(pane, canvas, "src/com/binge/Stages/stage1/1.in");
         });
     }
 
     public static void loadStageFromFile(Pane pane, Canvas canvas, String filename) {
+        Main.obstacles.clear();
+        Main.items.clear();
+        Main.displacers.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             pane.getChildren().clear();
 
@@ -85,6 +89,7 @@ public class StageLoader {
                             if (tokens.length >= 2) {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
+                                pane.getChildren().remove(Main.redBall.body);
                                 Main.redBall.pos.setX(x);
                                 Main.redBall.pos.setY(y);
                                 pane.getChildren().add(Main.redBall.body);
