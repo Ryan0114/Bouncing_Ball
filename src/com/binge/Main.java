@@ -13,6 +13,9 @@ import javafx.stage.Stage;
 import java.util.*;
 
 public class Main extends Application {
+    // Screen properties
+    public static final int WINDOW_HEIGHT = 800;
+    public static final int WINDOW_WIDTH = 1200;
 
     // Physics constants
     public static final double GRAVITY = 980;          // pixels per second squared
@@ -22,30 +25,30 @@ public class Main extends Application {
     public static final double FRICTION = 0.6; 
     
     // containers
-    ArrayList<Obstacle> obstacles = new ArrayList<>();
-    ArrayList<Character> characters = new ArrayList<>();
-    ArrayList<Collectible> items = new ArrayList<>();
-    ArrayList<Displacer> displacers = new ArrayList<>();
+    public static ArrayList<Obstacle> obstacles = new ArrayList<>();
+    public static ArrayList<Character> characters = new ArrayList<>();
+    public static ArrayList<Collectible> items = new ArrayList<>();
+    public static ArrayList<Displacer> displacers = new ArrayList<>();
 
     // For fixed timestep physics
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
     private double accumulator = 0.0;
     private GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
 
+    // Main character
+    public static Character redBall = new Character(150, 50, 20, Color.RED);
+
     @Override
     public void start(Stage stage) {
-        Canvas canvas = new Canvas(1200, 900);
+        Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
 
         Pane pane = new Pane(canvas);
 
-        StageLoader.loadStageFromFile("src/com/binge/Stages/1.in", pane, obstacles, items, displacers);
+//        StageLoader.loadStageFromFile("src/com/binge/Stages/1.in", pane, obstacles, items, displacers);
+        StageLoader.loadMainPage(pane);
 
-        Character redBall = new Character(150, 50, 20, 50);
-        redBall.body.setFill(Color.RED);
-        pane.getChildren().add(redBall.body);
-
-        Scene scene = new Scene(pane, 1200, 900);
+        Scene scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
         stage.setTitle("Ball");
         stage.show();
