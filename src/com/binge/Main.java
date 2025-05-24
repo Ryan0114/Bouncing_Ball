@@ -10,6 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.*;
 
 public class Main extends Application {
@@ -94,7 +95,7 @@ public class Main extends Application {
                 accumulator += frameDeltaTime;
 
                 while (accumulator >= FIXED_PHYSICS_DT) {
-                    updateGamePhysics(obstacles, items, displacers, redBall, pane);
+                    updateGamePhysics(obstacles, items, displacers, redBall, pane, canvas);
                     accumulator -= FIXED_PHYSICS_DT;
                 }
 
@@ -115,7 +116,7 @@ public class Main extends Application {
 
     private void updateGamePhysics(ArrayList<Obstacle> obstacles,
                                    ArrayList<Collectible> items, ArrayList<Displacer> disp,
-                                   Character redBall, Pane pane) {
+                                   Character redBall, Pane pane, Canvas canvas) {
 
         // 1. Apply forces (Gravity, Input)
         redBall.v.add(0, GRAVITY * Main.FIXED_PHYSICS_DT);
@@ -205,16 +206,51 @@ public class Main extends Application {
         }
         // Left Wall
         if (redBall.body.getCenterX() - redBall.body.getRadius() < 0) {
-            redBall.body.setCenterX(redBall.body.getRadius());
-            redBall.pos.setX(redBall.body.getCenterX());
-            if (redBall.v.getX() < 0) redBall.v.setX(-redBall.v.getX() * restitutionBoundary);
+            int lastSubstage = redBall.currentSubstage - 1;
+            String lastStagePath = "src/com/binge/Stages/stage1/" + lastSubstage + ".in";
+            File lastStageFile = new File(lastStagePath);
+
+            if (lastStageFile.exists() && redBall.currentSubstage!=1) {
+                double x = redBall.pos.getX() + WINDOW_WIDTH - 2.5*redBall.radius;
+                double y = redBall.pos.getY();
+                StageLoader.loadStageFromFile(pane, canvas, lastStagePath);
+                pane.getChildren().remove(redBall.body);
+                redBall.pos = new Point2D(x, y);
+                redBall.body.setCenterX(redBall.pos.getX());
+                redBall.body.setCenterY(redBall.pos.getY());
+                pane.getChildren().add(redBall.body);
+                redBall.currentSubstage -= 1;
+            } else {
+                redBall.body.setCenterX(redBall.body.getRadius());
+                redBall.pos.setX(redBall.body.getCenterX());
+                if (redBall.v.getX() < 0) redBall.v.setX(-redBall.v.getX() * restitutionBoundary);
+            }
         }
         // Right Wall
         if (redBall.body.getCenterX() + redBall.body.getRadius() > pane.getWidth()) {
-            redBall.body.setCenterX(pane.getWidth() - redBall.body.getRadius());
-            redBall.pos.setX(redBall.body.getCenterX());
-            if (redBall.v.getX() > 0) redBall.v.setX(-redBall.v.getX() * restitutionBoundary);
+            int nextSubstage = redBall.currentSubstage + 1;
+            String nextStagePath = "src/com/binge/Stages/stage1/" + nextSubstage + ".in";
+            File nextStageFile = new File(nextStagePath);
+
+            if (nextStageFile.exists()) {
+                Point2D pos = redBall.pos;
+                StageLoader.loadStageFromFile(pane, canvas, nextStagePath);
+                pane.getChildren().remove(redBall.body);
+                pos.add(-WINDOW_WIDTH + 2.5*redBall.radius, 0);
+                redBall.pos = pos;
+                redBall.body.setCenterX(redBall.pos.getX());
+                redBall.body.setCenterY(redBall.pos.getY());
+                pane.getChildren().add(redBall.body);
+                redBall.currentSubstage += 1;
+            } else {
+                redBall.body.setCenterX(pane.getWidth() - redBall.body.getRadius());
+                redBall.pos.setX(redBall.body.getCenterX());
+                if (redBall.v.getX() > 0) {
+                    redBall.v.setX(-redBall.v.getX() * restitutionBoundary);
+                }
+            }
         }
+
 
         // Global friction/drag - apply this carefully.
         // This could be air resistance or a general damping.

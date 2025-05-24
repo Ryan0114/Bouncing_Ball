@@ -37,7 +37,6 @@ class Coin extends Collectible {
         hitbox.color = Color.TRANSPARENT;
         hitbox.body.setFill(hitbox.color);
         hitbox.body.setStroke(Color.TRANSPARENT);
-        System.out.println(c.coins);
     }
 }
 
@@ -54,10 +53,12 @@ class SizeShifter extends Collectible {
 
     @Override
     public void handleCollision(Character c) {
-        c.radius += this.increment;
-        c.body.setRadius(c.radius);
         hitbox.color = Color.TRANSPARENT;
         hitbox.body.setFill(hitbox.color);
         hitbox.body.setStroke(Color.TRANSPARENT);
+
+        if (c.radius + increment <= 0) return;
+        c.radius += this.increment;
+        c.body.setRadius(c.radius);
     }
 }
