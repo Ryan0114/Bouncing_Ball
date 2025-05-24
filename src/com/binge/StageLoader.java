@@ -3,6 +3,7 @@ package com.binge;
 import java.io.*;
 import java.util.*;
 
+import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
@@ -11,7 +12,7 @@ import javafx.scene.text.Text;
 
 public class StageLoader {
 
-    public static void loadMainPage(Pane pane) {
+    public static void loadMainPage(Pane pane, Canvas canvas) {
         pane.getChildren().clear();
 
         Text title = new Text("Ball");
@@ -21,25 +22,32 @@ public class StageLoader {
         pane.getChildren().add(title);
 
         Button selectLevels = new Button("Play");
+        selectLevels.setLayoutX(400);
+        selectLevels.setLayoutY(400);
         pane.getChildren().add(selectLevels);
+
+        Button customLevel = new Button("Custom level");
+        customLevel.setLayoutX(380);
+        customLevel.setLayoutY(440);
+        pane.getChildren().add(customLevel);
 
         selectLevels.setOnAction(actionEvent -> {
             System.out.println("Pressed");
             pane.getChildren().removeAll();
-            loadSelectStage(pane);
+            loadSelectStage(pane, canvas);
         });
     }
 
-    public static void loadSelectStage(Pane pane) {
+    public static void loadSelectStage(Pane pane, Canvas canvas) {
         pane.getChildren().clear();
 
         Button mainPage = new Button("main page");
-        mainPage.setLayoutX(400);
-        mainPage.setLayoutY(400);
+        mainPage.setLayoutX(40);
+        mainPage.setLayoutY(40);
         pane.getChildren().add(mainPage);
 
         mainPage.setOnAction(actionEvent -> {
-            loadMainPage(pane);
+            loadMainPage(pane, canvas);
         });
 
         Button stage = new Button("Stage 1");
@@ -48,13 +56,15 @@ public class StageLoader {
         pane.getChildren().add(stage);
 
         stage.setOnAction(e -> {
-            loadStageFromFile(pane, "src/com/binge/Stages/1.in");
+            loadStageFromFile(pane, canvas, "src/com/binge/Stages/1.in");
         });
     }
 
-    public static void loadStageFromFile(Pane pane, String filename) {
+    public static void loadStageFromFile(Pane pane, Canvas canvas, String filename) {
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             pane.getChildren().clear();
+
+            pane.getChildren().add(canvas);
 
             String line;
             String section = "";

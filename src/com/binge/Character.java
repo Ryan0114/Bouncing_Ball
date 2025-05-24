@@ -21,6 +21,7 @@ public class Character {
         this.coins = 0;
         this.body = new Circle(posX, posY, radius);
         this.body.setFill(color);
+        this.body.setStroke(Color.BLACK);
         this.specialTransport = false;
         this.jumpCount = 0;
     }
