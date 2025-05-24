@@ -5,8 +5,17 @@ import java.util.*;
 
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
 
 public class StageLoader {
+
+    public static void loadMainPage(Pane pane) {
+        pane.getChildren().removeAll();
+        Text title = new Text("Ball");
+        title.setLayoutX(300);
+        title.setLayoutY(300);
+        pane.getChildren().add(title);
+    }
 
     public static void loadStageFromFile(String filename, Pane pane,
                                          ArrayList<Obstacle> obstacles, ArrayList<Collectible> items, ArrayList<Displacer> displacers) {
