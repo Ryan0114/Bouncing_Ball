@@ -36,7 +36,7 @@ public class Main extends Application {
     private GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
 
     // Main character
-    public static Character redBall = new Character(150, 50, 20, Color.RED);
+    public static Character redBall = new Character(150, 50, 20, Color.rgb(255,241,204));
 
     @Override
     public void start(Stage stage) {
@@ -45,8 +45,7 @@ public class Main extends Application {
 
         Pane pane = new Pane(canvas);
 
-//        StageLoader.loadStageFromFile("src/com/binge/Stages/1.in", pane, obstacles, items, displacers);
-        StageLoader.loadMainPage(pane);
+        StageLoader.loadMainPage(pane, canvas);
 
         Scene scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
