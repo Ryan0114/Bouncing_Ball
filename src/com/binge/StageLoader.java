@@ -9,6 +9,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+import static com.binge.Main.character;
+import static com.binge.Main.pane;
+
 public class StageLoader {
 
     public static void loadMainPage(Pane pane, Canvas canvas) {
@@ -54,26 +57,46 @@ public class StageLoader {
             loadMainPage(pane, canvas);
         });
 
-        Button stage = new Button("Stage 1");
-        stage.setLayoutX(450);
-        stage.setLayoutY(400);
-        pane.getChildren().add(stage);
+        Button stageBtn = new Button("Stage 1");
+        stageBtn.setLayoutX(450);
+        stageBtn.setLayoutY(400);
+        pane.getChildren().add(stageBtn);
 
-        stage.setOnAction(e -> {
-            Main.character.currentStage = 1;
-            Main.character.currentSubstage = 1;
-            loadStageFromFile(pane, canvas, "src/com/binge/Stages/stage1/1.in");
+        stageBtn.setOnAction(e -> {
+            character.currentStage = 1;
+            character.currentSubstage = 1;
+//            loadStageFromFile(pane, canvas, "src/com/binge/Stages/stage1/1.in");
+            loadStage(1);
         });
     }
 
-    public static void loadStageFromFile(Pane pane, Canvas canvas, String filename) {
-        Main.obstacles.clear();
-        Main.items.clear();
-        Main.displacers.clear();
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-            pane.getChildren().clear();
+    public static void loadStage(int n) {
+        String path = "src/com/binge/Stages/stage" + n + "/";
+        File dir = new File(path);
+        File[] directoryListing = dir.listFiles();
+        if (directoryListing != null) {
+            for (File child : directoryListing) {
+                System.out.println(child.getName());
+                Main.stages.add(loadStageFromFile(path + child.getName()));
+            }
+        }
+        character.currentStage = n;
+        character.currentSubstage = 1;
+        pane = Main.stages.getFirst();
+        pane.getChildren().add(Main.canvas);
+        Main.scene.setRoot(pane);
+    }
 
-            pane.getChildren().add(canvas);
+    public static Pane loadStageFromFile(String filename) {
+        Pane stage = new Pane();
+
+//        Main.obstacles.clear();
+//        Main.items.clear();
+//        Main.displacers.clear();
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+//            pane.getChildren().clear();
+//
+//            stage.getChildren().add(Main.canvas);
 
             String line;
             String section = "";
@@ -85,7 +108,7 @@ public class StageLoader {
                     continue;
                 } else if (line.equals("initial position") ||line.equals("CircleObstacle") ||
                         line.equals("RectangleObstacle") || line.equals("Coin") ||
-                        line.equals("SizeShifter") || line.equals("GrapplePoint")) {
+                        line.equals("SizeShifter") || line.equals("GrapplePoint") || line.equals("Checkpoint")) {
                     section = line;
                 } else {
                     String[] tokens = line.split("\\s+");
@@ -94,10 +117,8 @@ public class StageLoader {
                             if (tokens.length >= 2) {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
-                                pane.getChildren().remove(Main.character.body);
-                                Main.character.pos.setX(x);
-                                Main.character.pos.setY(y);
-                                pane.getChildren().add(Main.character.body);
+                                character = new Character(x, y, 20, Color.rgb(255,241,204));
+                                stage.getChildren().add(character.body);
                             }
                             break;
                         case "CircleObstacle":
@@ -105,7 +126,7 @@ public class StageLoader {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
-                                CircleObstacle co = new CircleObstacle(pane, x, y, radius, Color.GRAY);
+                                CircleObstacle co = new CircleObstacle(stage, x, y, radius, Color.GRAY);
                                 Main.obstacles.add(co);
                             }
                             break;
@@ -116,8 +137,16 @@ public class StageLoader {
                                 double width = Double.parseDouble(tokens[2]);
                                 double height = Double.parseDouble(tokens[3]);
                                 double angle = Double.parseDouble(tokens[4]);
-                                RectangleObstacle ro = new RectangleObstacle(pane, cx, cy, width, height, angle, Color.BLUE);
+                                RectangleObstacle ro = new RectangleObstacle(stage, cx, cy, width, height, angle, Color.BLUE);
                                 Main.obstacles.add(ro);
+                            }
+                            break;
+                        case "Checkpoint":
+                            if (tokens.length >= 2) {
+                                double x = Double.parseDouble(tokens[0]);
+                                double y = Double.parseDouble(tokens[1]);
+                                Checkpoint checkpoint = new Checkpoint(stage, x, y);
+                                Main.checkpoints.add(checkpoint);
                             }
                             break;
                         case "Coin":
@@ -126,7 +155,7 @@ public class StageLoader {
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
                                 int value = Integer.parseInt(tokens[3]);
-                                Coin coin = new Coin(pane, x, y, radius, value);
+                                Coin coin = new Coin(stage, x, y, radius, value);
                                 Main.items.add(coin);
                             }
                             break;
@@ -136,7 +165,7 @@ public class StageLoader {
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
                                 int increment = Integer.parseInt(tokens[3]);
-                                SizeShifter ss = new SizeShifter(pane, x, y, radius, increment);
+                                SizeShifter ss = new SizeShifter(stage, x, y, radius, increment);
                                 Main.items.add(ss);
                             }
                             break;
@@ -145,7 +174,7 @@ public class StageLoader {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
-                                GrapplePoint gp = new GrapplePoint(pane, x, y, radius);
+                                GrapplePoint gp = new GrapplePoint(stage, x, y, radius);
                                 Main.displacers.add(gp);
                             }
                             break;
@@ -155,9 +184,17 @@ public class StageLoader {
         } catch (IOException e) {
             System.err.println("Error reading file: " + filename);
         }
+
+        return stage;
     }
 
     public static void loadCustomStage(Pane pane, Canvas canvas) {
+
+    }
+
+    public static void loadFinishPage() {
+        pane.getChildren().clear();
+
 
     }
 }

@@ -14,7 +14,9 @@ import java.io.File;
 import java.util.*;
 
 public class Main extends Application {
-    Scene scene;
+    public static Canvas canvas;
+    public static Pane pane;
+    public static Scene scene;
 
     // Screen properties
     public static final int WINDOW_HEIGHT = 800;
@@ -32,6 +34,8 @@ public class Main extends Application {
     public static ArrayList<Character> characters = new ArrayList<>();
     public static ArrayList<Collectible> items = new ArrayList<>();
     public static ArrayList<Displacer> displacers = new ArrayList<>();
+    public static ArrayList<Checkpoint> checkpoints = new ArrayList<>();
+    public static ArrayList<Pane> stages = new ArrayList<>();
 
     // For fixed timestep physics
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
@@ -43,10 +47,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
+        canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
 
-        Pane pane = new Pane(canvas);
+        pane = new Pane(canvas);
 
         StageLoader.loadMainPage(pane, canvas);
 
@@ -147,6 +151,12 @@ public class Main extends Application {
             }
         }
 
+        for (Checkpoint c : checkpoints) {
+            double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
+            double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
+            c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
+        }
+
         // 6. Update position IF NO OBSTACLE COLLISION handled position
         // If an obstacle collision occurred, its handleCollision should have set the correct position.
         // If characterCollidedWithObstacle is true, we assume position and velocity are handled.
@@ -181,16 +191,18 @@ public class Main extends Application {
             String lastStagePath = "src/com/binge/Stages/stage1/" + lastSubstage + ".in";
             File lastStageFile = new File(lastStagePath);
 
-            if (lastStageFile.exists() && character.currentSubstage!=1) {
-                double x = character.pos.getX() + WINDOW_WIDTH - 2.5*character.radius;
-                double y = character.pos.getY();
-                StageLoader.loadStageFromFile(pane, canvas, lastStagePath);
-                pane.getChildren().remove(character.body);
-                character.pos = new Point2D(x, y);
+//            if (lastStageFile.exists() && character.currentSubstage!=1) {
+            if (character.currentSubstage - 1 >= 1) {
+                character.currentSubstage -= 1;
+                pane = stages.get(character.currentSubstage-1);
+                scene.setRoot(pane);
+                pane.getChildren().add(canvas);
+                Point2D pos = character.pos;
+                pos.add(WINDOW_WIDTH - 2.5*character.radius, 0);
+                character.pos = pos;
                 character.body.setCenterX(character.pos.getX());
                 character.body.setCenterY(character.pos.getY());
                 pane.getChildren().add(character.body);
-                character.currentSubstage -= 1;
             } else {
                 character.body.setCenterX(character.body.getRadius());
                 character.pos.setX(character.body.getCenterX());
@@ -203,16 +215,18 @@ public class Main extends Application {
             String nextStagePath = "src/com/binge/Stages/stage1/" + nextSubstage + ".in";
             File nextStageFile = new File(nextStagePath);
 
-            if (nextStageFile.exists()) {
+//            if (nextStageFile.exists()) {
+            if (character.currentSubstage + 1 <= stages.size()) {
+                character.currentSubstage += 1;
+                pane = stages.get(character.currentSubstage-1);
+                scene.setRoot(pane);
+                pane.getChildren().add(canvas);
                 Point2D pos = character.pos;
-                StageLoader.loadStageFromFile(pane, canvas, nextStagePath);
-                pane.getChildren().remove(character.body);
                 pos.add(-WINDOW_WIDTH + 2.5*character.radius, 0);
                 character.pos = pos;
                 character.body.setCenterX(character.pos.getX());
                 character.body.setCenterY(character.pos.getY());
                 pane.getChildren().add(character.body);
-                character.currentSubstage += 1;
             } else {
                 character.body.setCenterX(pane.getWidth() - character.body.getRadius());
                 character.pos.setX(character.body.getCenterX());
