@@ -1,7 +1,6 @@
 package com.binge;
 
 import java.io.*;
-import java.util.*;
 
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
@@ -55,8 +54,8 @@ public class StageLoader {
         pane.getChildren().add(stage);
 
         stage.setOnAction(e -> {
-            Main.redBall.currentStage = 1;
-            Main.redBall.currentSubstage = 1;
+            Main.character.currentStage = 1;
+            Main.character.currentSubstage = 1;
             loadStageFromFile(pane, canvas, "src/com/binge/Stages/stage1/1.in");
         });
     }
@@ -89,10 +88,10 @@ public class StageLoader {
                             if (tokens.length >= 2) {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
-                                pane.getChildren().remove(Main.redBall.body);
-                                Main.redBall.pos.setX(x);
-                                Main.redBall.pos.setY(y);
-                                pane.getChildren().add(Main.redBall.body);
+                                pane.getChildren().remove(Main.character.body);
+                                Main.character.pos.setX(x);
+                                Main.character.pos.setY(y);
+                                pane.getChildren().add(Main.character.body);
                             }
                             break;
                         case "CircleObstacle":
