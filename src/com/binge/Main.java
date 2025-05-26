@@ -14,6 +14,8 @@ import java.io.File;
 import java.util.*;
 
 public class Main extends Application {
+    Scene scene;
+
     // Screen properties
     public static final int WINDOW_HEIGHT = 800;
     public static final int WINDOW_WIDTH = 1200;
@@ -48,30 +50,12 @@ public class Main extends Application {
 
         StageLoader.loadMainPage(pane, canvas);
 
-        Scene scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
+        scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
         stage.setTitle("Ball");
         stage.show();
 
-        scene.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) character.movingLeft = true;
-            if (event.getCode() == KeyCode.D || event.getCode() == KeyCode.RIGHT) character.movingRight = true;
-            if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
-                if (character.jumpCount < 2) { // Allow double jump if on ground or in air once
-                    character.jumpCount++;
-                    character.movingUp = true; // This will be an impulse
-                }
-            }
-            if (event.getCode() == KeyCode.SPACE) character.specialTransport = true;
-        });
-
-        scene.setOnKeyReleased(event -> {
-            if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) character.movingLeft = false;
-            if (event.getCode() == KeyCode.D || event.getCode() == KeyCode.RIGHT) character.movingRight = false;
-            // movingUp is an impulse, so no key release needed to stop it in the same way as continuous movement
-            // If W was for continuous upward thrust, then character.movingUp = false; would be needed.
-            if (event.getCode() == KeyCode.SPACE) character.specialTransport = false;
-        });
+        handleKeyEvent();
 
         AnimationTimer timer = new AnimationTimer() {
             private long lastUpdateNanos = -1;
@@ -87,9 +71,7 @@ public class Main extends Application {
                 double frameDeltaTime = (now - lastUpdateNanos) / 1_000_000_000.0; // frameDeltaTime in seconds
                 lastUpdateNanos = now;
 
-                // Cap frameDeltaTime to prevent spiral of death if game lags significantly
-                // Max time step for accumulation, e.g., 0.1s (equiv. to 10 FPS)
-                // This prevents the physics loop from trying to catch up too much after a long pause.
+                // prevents the physics loop from trying to catch up too much after a long lag
                 frameDeltaTime = Math.min(frameDeltaTime, 0.1);
                 mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                 accumulator += frameDeltaTime;
@@ -255,6 +237,28 @@ public class Main extends Application {
         // to let obstacle-specific friction take precedence.
 
         // System.out.println(character.v.getX() + " " + character.v.getY() + " | Jump: " + character.jumpCount);
+    }
+
+    private void handleKeyEvent() {
+        scene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) character.movingLeft = true;
+            if (event.getCode() == KeyCode.D || event.getCode() == KeyCode.RIGHT) character.movingRight = true;
+            if (event.getCode() == KeyCode.W || event.getCode() == KeyCode.UP) {
+                if (character.jumpCount < 2) { // Allow double jump if on ground or in air once
+                    character.jumpCount++;
+                    character.movingUp = true; // This will be an impulse
+                }
+            }
+            if (event.getCode() == KeyCode.SPACE) character.specialTransport = true;
+        });
+
+        scene.setOnKeyReleased(event -> {
+            if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) character.movingLeft = false;
+            if (event.getCode() == KeyCode.D || event.getCode() == KeyCode.RIGHT) character.movingRight = false;
+            // movingUp is an impulse, so no key release needed to stop it in the same way as continuous movement
+            // If W was for continuous upward thrust, then character.movingUp = false; would be needed.
+            if (event.getCode() == KeyCode.SPACE) character.specialTransport = false;
+        });
     }
 
     private void drawLine(GraphicsContext gc, double x0, double y0, double x1, double y1) {

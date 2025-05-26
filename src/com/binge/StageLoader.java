@@ -25,15 +25,21 @@ public class StageLoader {
         selectLevels.setLayoutY(400);
         pane.getChildren().add(selectLevels);
 
+        selectLevels.setOnAction(event1 -> {
+            pane.getChildren().removeAll();
+            loadSelectStage(pane, canvas);
+        });
+
         Button customLevel = new Button("Custom level");
         customLevel.setLayoutX(380);
         customLevel.setLayoutY(440);
         pane.getChildren().add(customLevel);
 
-        selectLevels.setOnAction(actionEvent -> {
-            pane.getChildren().removeAll();
-            loadSelectStage(pane, canvas);
-        });
+//        customLevel.setOnAction(event2 -> {
+//            pane.getChildren().removeAll();
+//            loadCustomStage(pane, canvas);
+//        });
+
     }
 
     public static void loadSelectStage(Pane pane, Canvas canvas) {
@@ -149,5 +155,9 @@ public class StageLoader {
         } catch (IOException e) {
             System.err.println("Error reading file: " + filename);
         }
+    }
+
+    public static void loadCustomStage(Pane pane, Canvas canvas) {
+
     }
 }
