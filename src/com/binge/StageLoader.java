@@ -63,32 +63,36 @@ public class StageLoader {
         pane.getChildren().add(stageBtn);
 
         stageBtn.setOnAction(e -> {
-            character.currentStage = 1;
-            character.currentSubstage = 1;
+            character.levelNum = 1;
+            character.sublevelNum = 1;
 //            loadStageFromFile(pane, canvas, "src/com/binge/Stages/stage1/1.in");
             loadStage(1);
         });
     }
 
     public static void loadStage(int n) {
+        Level level = new Level(n);
         String path = "src/com/binge/Stages/stage" + n + "/";
         File dir = new File(path);
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
-                System.out.println(child.getName());
-                Main.stages.add(loadStageFromFile(path + child.getName()));
+                level.sublevels.add(loadStageFromFile(path + child.getName()));
+                level.levelLength += 1;
             }
         }
-        character.currentStage = n;
-        character.currentSubstage = 1;
-        pane = Main.stages.getFirst();
+        character.levelNum = n;
+        character.sublevelNum = 1;
+        pane = level.sublevels.getFirst().pane;
         pane.getChildren().add(Main.canvas);
         Main.scene.setRoot(pane);
+
+        Main.currentLevel = level;
+        Main.currentSublevel = level.sublevels.getFirst();
     }
 
-    public static Pane loadStageFromFile(String filename) {
-        Pane stage = new Pane();
+    public static Sublevel loadStageFromFile(String filename) {
+        Sublevel sublevel = new Sublevel();
 
 //        Main.obstacles.clear();
 //        Main.items.clear();
@@ -118,7 +122,7 @@ public class StageLoader {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
                                 character = new Character(x, y, 20, Color.rgb(255,241,204));
-                                stage.getChildren().add(character.body);
+                                sublevel.pane.getChildren().add(character.body);
                             }
                             break;
                         case "CircleObstacle":
@@ -126,8 +130,8 @@ public class StageLoader {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
-                                CircleObstacle co = new CircleObstacle(stage, x, y, radius, Color.GRAY);
-                                Main.obstacles.add(co);
+                                CircleObstacle co = new CircleObstacle(sublevel.pane, x, y, radius, Color.GRAY);
+                                sublevel.obstacles.add(co);
                             }
                             break;
                         case "RectangleObstacle":
@@ -137,16 +141,15 @@ public class StageLoader {
                                 double width = Double.parseDouble(tokens[2]);
                                 double height = Double.parseDouble(tokens[3]);
                                 double angle = Double.parseDouble(tokens[4]);
-                                RectangleObstacle ro = new RectangleObstacle(stage, cx, cy, width, height, angle, Color.BLUE);
-                                Main.obstacles.add(ro);
+                                RectangleObstacle ro = new RectangleObstacle(sublevel.pane, cx, cy, width, height, angle, Color.BLUE);
+                                sublevel.obstacles.add(ro);
                             }
                             break;
                         case "Checkpoint":
                             if (tokens.length >= 2) {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
-                                Checkpoint checkpoint = new Checkpoint(stage, x, y);
-                                Main.checkpoints.add(checkpoint);
+                                sublevel.checkpoint = new Checkpoint(sublevel.pane, x, y);
                             }
                             break;
                         case "Coin":
@@ -155,8 +158,8 @@ public class StageLoader {
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
                                 int value = Integer.parseInt(tokens[3]);
-                                Coin coin = new Coin(stage, x, y, radius, value);
-                                Main.items.add(coin);
+                                Coin coin = new Coin(sublevel.pane, x, y, radius, value);
+                                sublevel.items.add(coin);
                             }
                             break;
                         case "SizeShifter":
@@ -165,8 +168,8 @@ public class StageLoader {
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
                                 int increment = Integer.parseInt(tokens[3]);
-                                SizeShifter ss = new SizeShifter(stage, x, y, radius, increment);
-                                Main.items.add(ss);
+                                SizeShifter ss = new SizeShifter(sublevel.pane, x, y, radius, increment);
+                                sublevel.items.add(ss);
                             }
                             break;
                         case "GrapplePoint":
@@ -174,8 +177,8 @@ public class StageLoader {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
-                                GrapplePoint gp = new GrapplePoint(stage, x, y, radius);
-                                Main.displacers.add(gp);
+                                GrapplePoint gp = new GrapplePoint(sublevel.pane, x, y, radius);
+                                sublevel.displacers.add(gp);
                             }
                             break;
                     }
@@ -185,7 +188,7 @@ public class StageLoader {
             System.err.println("Error reading file: " + filename);
         }
 
-        return stage;
+        return sublevel;
     }
 
     public static void loadCustomStage(Pane pane, Canvas canvas) {

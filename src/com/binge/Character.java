@@ -10,7 +10,7 @@ public class Character {
     Circle body;
     boolean movingLeft, movingRight, movingUp, specialTransport;
     int coins;
-    int currentStage, currentSubstage;
+    int levelNum, sublevelNum;
 
     Character(double posX, double posY, int radius, Color color) {
         this.pos = new Point2D(posX, posY);

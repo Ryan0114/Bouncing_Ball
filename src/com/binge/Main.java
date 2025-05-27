@@ -30,12 +30,14 @@ public class Main extends Application {
     public static final double FRICTION = 0.6; 
     
     // containers
-    public static ArrayList<Obstacle> obstacles = new ArrayList<>();
-    public static ArrayList<Character> characters = new ArrayList<>();
-    public static ArrayList<Collectible> items = new ArrayList<>();
-    public static ArrayList<Displacer> displacers = new ArrayList<>();
-    public static ArrayList<Checkpoint> checkpoints = new ArrayList<>();
-    public static ArrayList<Pane> stages = new ArrayList<>();
+//    public static ArrayList<Obstacle> obstacles = new ArrayList<>();
+//    public static ArrayList<Character> characters = new ArrayList<>();
+//    public static ArrayList<Collectible> items = new ArrayList<>();
+//    public static ArrayList<Displacer> displacers = new ArrayList<>();
+//    public static ArrayList<Checkpoint> checkpoints = new ArrayList<>();
+//    public static ArrayList<Pane> stages = new ArrayList<>();
+    public static Level currentLevel = new Level(0);
+    public static Sublevel currentSublevel = new Sublevel();
 
     // For fixed timestep physics
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
@@ -81,7 +83,7 @@ public class Main extends Application {
                 accumulator += frameDeltaTime;
 
                 while (accumulator >= FIXED_PHYSICS_DT) {
-                    updateGamePhysics(obstacles, items, displacers, character, pane, canvas);
+                    updateGamePhysics(currentSublevel.obstacles, currentSublevel.items, currentSublevel.displacers, character, pane, canvas);
                     accumulator -= FIXED_PHYSICS_DT;
                 }
             }
@@ -151,11 +153,11 @@ public class Main extends Application {
             }
         }
 
-        for (Checkpoint c : checkpoints) {
-            double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
-            double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
-            c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
-        }
+//        for (Checkpoint c : checkpoints) {
+//            double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
+//            double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
+//            c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
+//        }
 
         // 6. Update position IF NO OBSTACLE COLLISION handled position
         // If an obstacle collision occurred, its handleCollision should have set the correct position.
@@ -187,14 +189,14 @@ public class Main extends Application {
         }
         // Left Wall
         if (character.body.getCenterX() - character.body.getRadius() < 0) {
-            int lastSubstage = character.currentSubstage - 1;
+            int lastSubstage = character.sublevelNum - 1;
             String lastStagePath = "src/com/binge/Stages/stage1/" + lastSubstage + ".in";
             File lastStageFile = new File(lastStagePath);
 
 //            if (lastStageFile.exists() && character.currentSubstage!=1) {
-            if (character.currentSubstage - 1 >= 1) {
-                character.currentSubstage -= 1;
-                pane = stages.get(character.currentSubstage-1);
+            if (character.sublevelNum - 1 >= 1) {
+                character.sublevelNum -= 1;
+                currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);
                 scene.setRoot(pane);
                 pane.getChildren().add(canvas);
                 Point2D pos = character.pos;
@@ -211,22 +213,23 @@ public class Main extends Application {
         }
         // Right Wall
         if (character.body.getCenterX() + character.body.getRadius() > pane.getWidth()) {
-            int nextSubstage = character.currentSubstage + 1;
+            int nextSubstage = character.sublevelNum + 1;
             String nextStagePath = "src/com/binge/Stages/stage1/" + nextSubstage + ".in";
             File nextStageFile = new File(nextStagePath);
 
 //            if (nextStageFile.exists()) {
-            if (character.currentSubstage + 1 <= stages.size()) {
-                character.currentSubstage += 1;
-                pane = stages.get(character.currentSubstage-1);
-                scene.setRoot(pane);
-                pane.getChildren().add(canvas);
+            System.out.println(character.sublevelNum + " " + currentLevel.levelLength);
+            if (character.sublevelNum + 1 <= currentLevel.levelLength) {
+                character.sublevelNum += 1;
+                currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);
+                scene.setRoot(currentSublevel.pane);
+                currentSublevel.pane.getChildren().add(canvas);
                 Point2D pos = character.pos;
                 pos.add(-WINDOW_WIDTH + 2.5*character.radius, 0);
                 character.pos = pos;
                 character.body.setCenterX(character.pos.getX());
                 character.body.setCenterY(character.pos.getY());
-                pane.getChildren().add(character.body);
+                currentSublevel.pane.getChildren().add(character.body);
             } else {
                 character.body.setCenterX(pane.getWidth() - character.body.getRadius());
                 character.pos.setX(character.body.getCenterX());
