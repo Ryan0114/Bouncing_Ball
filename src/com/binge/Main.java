@@ -218,7 +218,6 @@ public class Main extends Application {
             File nextStageFile = new File(nextStagePath);
 
 //            if (nextStageFile.exists()) {
-            System.out.println(character.sublevelNum + " " + currentLevel.levelLength);
             if (character.sublevelNum + 1 <= currentLevel.levelLength) {
                 character.sublevelNum += 1;
                 currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);

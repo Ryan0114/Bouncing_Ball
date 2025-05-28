@@ -77,7 +77,9 @@ public class StageLoader {
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
-                level.sublevels.add(loadStageFromFile(path + child.getName()));
+                Sublevel sublevel = loadStageFromFile(path + child.getName());
+                level.sublevels.add(sublevel);
+                level.checkpoints.add(sublevel.checkpoint);
                 level.levelLength += 1;
             }
         }
