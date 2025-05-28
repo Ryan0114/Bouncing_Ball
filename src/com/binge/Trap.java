@@ -12,6 +12,6 @@ class CircleTrap extends CircleObstacle implements Trap {
 
     @Override
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
-
+//        Main.currentLevel.revive(c);
     }
 }

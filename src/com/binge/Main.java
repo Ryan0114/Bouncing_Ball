@@ -38,7 +38,7 @@ public class Main extends Application {
 //    public static ArrayList<Checkpoint> checkpoints = new ArrayList<>();
 //    public static ArrayList<Pane> stages = new ArrayList<>();
     public static Level currentLevel = new Level(0);
-    public static Sublevel currentSublevel = new Sublevel();
+    public static Sublevel currentSublevel = new Sublevel(0);
 
     // For fixed timestep physics
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
@@ -84,7 +84,7 @@ public class Main extends Application {
                 accumulator += frameDeltaTime;
 
                 while (accumulator >= FIXED_PHYSICS_DT) {
-                    updateGamePhysics(currentSublevel.obstacles, currentSublevel.items, currentSublevel.displacers, character, pane, canvas);
+                    updateGamePhysics(currentSublevel.obstacles, currentSublevel.items, currentSublevel.displacers, currentSublevel.traps, character, pane, canvas);
                     accumulator -= FIXED_PHYSICS_DT;
                 }
             }
@@ -93,7 +93,7 @@ public class Main extends Application {
     }
 
     private void updateGamePhysics(ArrayList<Obstacle> obstacles,
-                                   ArrayList<Collectible> items, ArrayList<Displacer> disp,
+                                   ArrayList<Collectible> items, ArrayList<Displacer> disp, ArrayList<Trap> traps,
                                    Character character, Pane pane, Canvas canvas) {
 
         // 1. Apply forces (Gravity, Input)
@@ -121,8 +121,6 @@ public class Main extends Application {
             double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
             if (obs.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT)) {
                 characterCollidedWithObstacle = true;
-                // The obstacle's checkCollision or its handleCollision (called internally)
-                // should manage position correction and velocity response for that specific collision.
             }
         }
 
@@ -138,6 +136,7 @@ public class Main extends Application {
                 itemIterator.remove();
             }
         }
+
 
         // 5. Displacers (e.g., GrapplePoint)
         for (Displacer d : disp) {
@@ -155,7 +154,7 @@ public class Main extends Application {
         }
 
         for (Checkpoint c : currentLevel.checkpoints) {
-            if (c != null) {
+            if (c != null && currentSublevel.num == c.substageNum) {
                 double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
                 double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
                 c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
@@ -201,13 +200,13 @@ public class Main extends Application {
                 character.sublevelNum -= 1;
                 currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);
                 scene.setRoot(pane);
-                pane.getChildren().add(canvas);
+                if (!pane.getChildren().contains(canvas)) pane.getChildren().add(canvas);
                 Point2D pos = character.pos;
                 pos.add(WINDOW_WIDTH - 2.5*character.radius, 0);
                 character.pos = pos;
                 character.body.setCenterX(character.pos.getX());
                 character.body.setCenterY(character.pos.getY());
-                pane.getChildren().add(character.body);
+                if (!pane.getChildren().contains(character.body)) pane.getChildren().add(character.body);
             } else {
                 character.body.setCenterX(character.body.getRadius());
                 character.pos.setX(character.body.getCenterX());
@@ -225,13 +224,13 @@ public class Main extends Application {
                 character.sublevelNum += 1;
                 currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);
                 scene.setRoot(currentSublevel.pane);
-                currentSublevel.pane.getChildren().add(canvas);
+                if (!currentSublevel.pane.getChildren().contains(canvas)) currentSublevel.pane.getChildren().add(canvas);
                 Point2D pos = character.pos;
                 pos.add(-WINDOW_WIDTH + 2.5*character.radius, 0);
                 character.pos = pos;
                 character.body.setCenterX(character.pos.getX());
                 character.body.setCenterY(character.pos.getY());
-                currentSublevel.pane.getChildren().add(character.body);
+                if (!currentSublevel.pane.getChildren().contains(character.body)) currentSublevel.pane.getChildren().add(character.body);
             } else {
                 character.body.setCenterX(pane.getWidth() - character.body.getRadius());
                 character.pos.setX(character.body.getCenterX());
