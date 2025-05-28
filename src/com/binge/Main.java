@@ -1,5 +1,6 @@
 package com.binge;
 
+import com.sun.scenario.effect.impl.state.AccessHelper;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -30,7 +31,7 @@ public class Main extends Application {
     public static final double FRICTION = 0.6; 
     
     // containers
-//    public static ArrayList<Obstacle> obstacles = new ArrayList<>();
+//    public static ArrayList<Obstacle.java> obstacles = new ArrayList<>();
 //    public static ArrayList<Character> characters = new ArrayList<>();
 //    public static ArrayList<Collectible> items = new ArrayList<>();
 //    public static ArrayList<Displacer> displacers = new ArrayList<>();
@@ -153,11 +154,13 @@ public class Main extends Application {
             }
         }
 
-//        for (Checkpoint c : checkpoints) {
-//            double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
-//            double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
-//            c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
-//        }
+        for (Checkpoint c : currentLevel.checkpoints) {
+            if (c != null) {
+                double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
+                double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
+                c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
+            }
+        }
 
         // 6. Update position IF NO OBSTACLE COLLISION handled position
         // If an obstacle collision occurred, its handleCollision should have set the correct position.
@@ -167,7 +170,7 @@ public class Main extends Application {
             character.pos.add(character.v.getX() * Main.FIXED_PHYSICS_DT, character.v.getY() * Main.FIXED_PHYSICS_DT);
         }
         // Always sync visual body to logical position after all physics and collision responses.
-        // Note: Obstacle handleCollision should update character.pos, this ensures body reflects it.
+        // Note: Obstacle.java handleCollision should update character.pos, this ensures body reflects it.
         character.body.setCenterX(character.pos.getX());
         character.body.setCenterY(character.pos.getY());
 

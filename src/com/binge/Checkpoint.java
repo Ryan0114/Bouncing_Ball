@@ -16,8 +16,13 @@ public class Checkpoint extends RectangleObstacle {
 
     @Override
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
-        activate = true;
+        this.activate = true;
         this.body.setFill(Color.GREEN.deriveColor(0, 1, 1, 0.3));
+    }
+
+    @Override
+    public String toString() {
+        return "Checkpoint: " + "{" + "x=" + pos.x + ", y=" + pos.y + ", activate=" + this.activate + '}';
     }
 }
 

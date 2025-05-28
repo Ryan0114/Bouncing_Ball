@@ -11,5 +11,6 @@ public class Level {
         this.levelLength = 0;
         this.index = n;
         this.sublevels = new ArrayList<>();
+        this.checkpoints = new ArrayList<>();
     }
 }
