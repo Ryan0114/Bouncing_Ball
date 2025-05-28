@@ -84,7 +84,7 @@ public class Main extends Application {
                 accumulator += frameDeltaTime;
 
                 while (accumulator >= FIXED_PHYSICS_DT) {
-                    updateGamePhysics(currentSublevel.obstacles, currentSublevel.items, currentSublevel.displacers, character, pane, canvas);
+                    updateGamePhysics(currentSublevel.obstacles, currentSublevel.items, currentSublevel.displacers, currentSublevel.traps, character, pane, canvas);
                     accumulator -= FIXED_PHYSICS_DT;
                 }
             }
@@ -93,7 +93,7 @@ public class Main extends Application {
     }
 
     private void updateGamePhysics(ArrayList<Obstacle> obstacles,
-                                   ArrayList<Collectible> items, ArrayList<Displacer> disp,
+                                   ArrayList<Collectible> items, ArrayList<Displacer> disp, ArrayList<Trap> traps,
                                    Character character, Pane pane, Canvas canvas) {
 
         // 1. Apply forces (Gravity, Input)
@@ -138,6 +138,7 @@ public class Main extends Application {
                 itemIterator.remove();
             }
         }
+
 
         // 5. Displacers (e.g., GrapplePoint)
         for (Displacer d : disp) {

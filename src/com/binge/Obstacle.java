@@ -12,6 +12,7 @@ public abstract class Obstacle {
     Point2D pos; // For CircleObstacle, this is center. For RectangleObstacle, this will be center.
     Shape body;
     Color color;
+    boolean fatal;
     double epsilon = 1e-5; // Small value to prevent sticking
 
     abstract boolean checkCollision(Character c, double dispX, double dispY, double deltaTime);
@@ -28,10 +29,10 @@ class CircleObstacle extends Obstacle {
     CircleObstacle(Pane pane, double posX, double posY, int radius, Color color) {
         this.pos = new Point2D(posX, posY); // Center of the circle
         this.radius = radius;
-        this.body = new Circle(posX, posY, radius); // JavaFX Circle
+        this.body = new Circle(posX, posY, radius);
         this.body.setFill(color);
         this.body.setStroke(Color.BLACK);
-        this.color = color; // Store color if needed for hitbox manipulation (like in Coin)
+        this.color = color;
         pane.getChildren().add(this.body);
     }
 

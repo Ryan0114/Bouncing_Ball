@@ -8,6 +8,7 @@ public class Sublevel {
     ArrayList<Obstacle> obstacles;
     ArrayList<Collectible> items;
     ArrayList<Displacer> displacers;
+    ArrayList<Trap> traps;
     Checkpoint checkpoint;
     Pane pane;
 

@@ -7,7 +7,7 @@ import static com.binge.Main.pane;
 import static com.binge.Main.WINDOW_HEIGHT;
 
 public class Checkpoint extends RectangleObstacle {
-    int width = 30;
+    int width = 30, substageNum;
     boolean activate = false;
 
     Checkpoint(Pane pane, double posX, double posY) {

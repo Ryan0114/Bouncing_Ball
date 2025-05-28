@@ -80,6 +80,7 @@ public class StageLoader {
                 Sublevel sublevel = loadStageFromFile(path + child.getName());
                 level.sublevels.add(sublevel);
                 level.checkpoints.add(sublevel.checkpoint);
+                if (sublevel.checkpoint != null) sublevel.checkpoint.substageNum = level.sublevels.size();
                 level.levelLength += 1;
             }
         }
@@ -114,7 +115,8 @@ public class StageLoader {
                     continue;
                 } else if (line.equals("initial position") ||line.equals("CircleObstacle") ||
                         line.equals("RectangleObstacle") || line.equals("Coin") ||
-                        line.equals("SizeShifter") || line.equals("GrapplePoint") || line.equals("Checkpoint")) {
+                        line.equals("SizeShifter") || line.equals("GrapplePoint") || line.equals("Checkpoint") ||
+                        line.equals("CircleTrap")) {
                     section = line;
                 } else {
                     String[] tokens = line.split("\\s+");
@@ -147,6 +149,14 @@ public class StageLoader {
                                 sublevel.obstacles.add(ro);
                             }
                             break;
+                        case "CircleTrap":
+                            if (tokens.length >= 3) {
+                                double x = Double.parseDouble(tokens[0]);
+                                double y = Double.parseDouble(tokens[1]);
+                                int radius = Integer.parseInt(tokens[2]);
+                                CircleTrap ct = new CircleTrap(sublevel.pane, x, y, radius, Color.RED);
+                                sublevel.traps.add(ct);
+                            }
                         case "Checkpoint":
                             if (tokens.length >= 2) {
                                 double x = Double.parseDouble(tokens[0]);
