@@ -23,16 +23,21 @@ public abstract class Obstacle {
 }
 
 class CircleObstacle extends Obstacle {
-    private final int radius;
+    private int radius;
     // Circle body is already a field in its JavaFX shape representation
 
     CircleObstacle(Pane pane, double posX, double posY, int radius, Color color) {
+        this(pane, posX, posY, radius, color, false);
+    }
+
+    CircleObstacle(Pane pane, double posX, double posY, int radius, Color color, boolean fatal) {
         this.pos = new Point2D(posX, posY); // Center of the circle
         this.radius = radius;
         this.body = new Circle(posX, posY, radius);
-        this.body.setFill(color);
+        this.fatal = fatal;
+        this.color = (fatal ? Color.RED : color);
+        this.body.setFill(this.color);
         this.body.setStroke(Color.BLACK);
-        this.color = color;
         pane.getChildren().add(this.body);
     }
 
@@ -56,6 +61,8 @@ class CircleObstacle extends Obstacle {
 
     // New handleCollision signature for CircleObstacle
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
+        if (this.fatal) c.revive();
+
         c.jumpCount = 0;
 
         // Position correction

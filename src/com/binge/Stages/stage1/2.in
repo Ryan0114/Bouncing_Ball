@@ -1,6 +1,8 @@
 stage 1
 GrapplePoint
 300 500 500
+Checkpoint
+1000 400
 CircleObstacle
 145 200 20
 40 150 30

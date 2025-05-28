@@ -5,6 +5,7 @@ import javafx.scene.layout.Pane;
 import java.util.ArrayList;
 
 public class Sublevel {
+    int num;
     ArrayList<Obstacle> obstacles;
     ArrayList<Collectible> items;
     ArrayList<Displacer> displacers;
@@ -12,7 +13,8 @@ public class Sublevel {
     Checkpoint checkpoint;
     Pane pane;
 
-    Sublevel() {
+    Sublevel(int n) {
+        this.num = n;
         this.pane = new Pane();
         this.obstacles = new ArrayList<>();
         this.items = new ArrayList<>();

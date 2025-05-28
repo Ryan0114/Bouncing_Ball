@@ -77,7 +77,7 @@ public class StageLoader {
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
-                Sublevel sublevel = loadStageFromFile(path + child.getName());
+                Sublevel sublevel = loadStageFromFile(path + child.getName(), level.levelLength+1);
                 level.sublevels.add(sublevel);
                 level.checkpoints.add(sublevel.checkpoint);
                 if (sublevel.checkpoint != null) sublevel.checkpoint.substageNum = level.sublevels.size();
@@ -94,8 +94,8 @@ public class StageLoader {
         Main.currentSublevel = level.sublevels.getFirst();
     }
 
-    public static Sublevel loadStageFromFile(String filename) {
-        Sublevel sublevel = new Sublevel();
+    public static Sublevel loadStageFromFile(String filename, int n) {
+        Sublevel sublevel = new Sublevel(n);
 
 //        Main.obstacles.clear();
 //        Main.items.clear();
@@ -134,9 +134,14 @@ public class StageLoader {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
                                 int radius = Integer.parseInt(tokens[2]);
-                                CircleObstacle co = new CircleObstacle(sublevel.pane, x, y, radius, Color.GRAY);
+                                boolean fatal = false;
+                                if (tokens.length >= 4) {
+                                    fatal = Boolean.parseBoolean(tokens[3]);
+                                }
+                                CircleObstacle co = new CircleObstacle(sublevel.pane, x, y, radius, Color.GRAY, fatal);
                                 sublevel.obstacles.add(co);
                             }
+
                             break;
                         case "RectangleObstacle":
                             if (tokens.length >= 5) {
@@ -149,14 +154,6 @@ public class StageLoader {
                                 sublevel.obstacles.add(ro);
                             }
                             break;
-                        case "CircleTrap":
-                            if (tokens.length >= 3) {
-                                double x = Double.parseDouble(tokens[0]);
-                                double y = Double.parseDouble(tokens[1]);
-                                int radius = Integer.parseInt(tokens[2]);
-                                CircleTrap ct = new CircleTrap(sublevel.pane, x, y, radius, Color.RED);
-                                sublevel.traps.add(ct);
-                            }
                         case "Checkpoint":
                             if (tokens.length >= 2) {
                                 double x = Double.parseDouble(tokens[0]);
