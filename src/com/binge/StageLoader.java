@@ -150,7 +150,11 @@ public class StageLoader {
                                 double width = Double.parseDouble(tokens[2]);
                                 double height = Double.parseDouble(tokens[3]);
                                 double angle = Double.parseDouble(tokens[4]);
-                                RectangleObstacle ro = new RectangleObstacle(sublevel.pane, cx, cy, width, height, angle, Color.BLUE);
+                                boolean fatal = false;
+                                if (tokens.length >= 6) {
+                                    fatal = Boolean.parseBoolean(tokens[5]);
+                                }
+                                RectangleObstacle ro = new RectangleObstacle(sublevel.pane, cx, cy, width, height, angle, Color.GRAY, fatal);
                                 sublevel.obstacles.add(ro);
                             }
                             break;

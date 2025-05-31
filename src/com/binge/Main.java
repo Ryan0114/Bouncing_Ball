@@ -84,7 +84,7 @@ public class Main extends Application {
                 accumulator += frameDeltaTime;
 
                 while (accumulator >= FIXED_PHYSICS_DT) {
-                    updateGamePhysics(currentSublevel.obstacles, currentSublevel.items, currentSublevel.displacers, currentSublevel.traps, character, pane, canvas);
+                    updateGamePhysics(character, pane, canvas);
                     accumulator -= FIXED_PHYSICS_DT;
                 }
             }
@@ -92,9 +92,7 @@ public class Main extends Application {
         timer.start();
     }
 
-    private void updateGamePhysics(ArrayList<Obstacle> obstacles,
-                                   ArrayList<Collectible> items, ArrayList<Displacer> disp, ArrayList<Trap> traps,
-                                   Character character, Pane pane, Canvas canvas) {
+    private void updateGamePhysics(Character character, Pane pane, Canvas canvas) {
 
         // 1. Apply forces (Gravity, Input)
         character.v.add(0, GRAVITY * Main.FIXED_PHYSICS_DT);
@@ -116,7 +114,7 @@ public class Main extends Application {
 
         // 3. Collision Detection and Resolution with Obstacles
         boolean characterCollidedWithObstacle = false;
-        for (Obstacle obs : obstacles) {
+        for (Obstacle obs : currentSublevel.obstacles) {
             double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
             double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
             if (obs.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT)) {
@@ -125,7 +123,7 @@ public class Main extends Application {
         }
 
         // 4. Collectibles
-        Iterator<Collectible> itemIterator = items.iterator();
+        Iterator<Collectible> itemIterator = currentSublevel.items.iterator();
         while (itemIterator.hasNext()) {
             Collectible item = itemIterator.next();
             if (item.checkCollision(character)) {
@@ -139,7 +137,7 @@ public class Main extends Application {
 
 
         // 5. Displacers (e.g., GrapplePoint)
-        for (Displacer d : disp) {
+        for (Displacer d : currentSublevel.displacers) {
             if (d.checkCollision(character)) {
                 if (d instanceof GrapplePoint gp) {
                     if (!gp.cooldown) {
@@ -199,14 +197,14 @@ public class Main extends Application {
             if (character.sublevelNum - 1 >= 1) {
                 character.sublevelNum -= 1;
                 currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);
-                scene.setRoot(pane);
-                if (!pane.getChildren().contains(canvas)) pane.getChildren().add(canvas);
+                scene.setRoot(currentSublevel.pane);
+                if (!currentSublevel.pane.getChildren().contains(canvas)) currentSublevel.pane.getChildren().add(canvas);
                 Point2D pos = character.pos;
                 pos.add(WINDOW_WIDTH - 2.5*character.radius, 0);
                 character.pos = pos;
                 character.body.setCenterX(character.pos.getX());
                 character.body.setCenterY(character.pos.getY());
-                if (!pane.getChildren().contains(character.body)) pane.getChildren().add(character.body);
+                if (!currentSublevel.pane.getChildren().contains(character.body)) currentSublevel.pane.getChildren().add(character.body);
             } else {
                 character.body.setCenterX(character.body.getRadius());
                 character.pos.setX(character.body.getCenterX());
