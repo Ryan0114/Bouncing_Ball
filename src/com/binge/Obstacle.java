@@ -117,12 +117,12 @@ class RectangleObstacle extends Obstacle {
     private final double angle; // Angle in radians
 
     // Constructor updated for center position and angle
-    RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color) {
+    RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color, boolean fatal) {
         this.pos = new Point2D(centerX, centerY); // Store center position
         this.width = width;
         this.height = height;
         this.angle = Math.toRadians(angleDegrees);
-        this.color = color;
+        this.fatal = fatal;
 
         // Create a rectangle shape, position it so its center is at (0,0) for rotation, then translate
         Rectangle rectShape = new Rectangle(-width / 2, -height / 2, width, height);
@@ -137,6 +137,9 @@ class RectangleObstacle extends Obstacle {
         this.body.setLayoutX(centerX);
         this.body.setLayoutY(centerY);
         this.body.getTransforms().addAll(rotate);
+
+        this.color = (fatal ? Color.RED : color);
+        this.body.setFill(this.color);
 
         pane.getChildren().add(this.body);
     }
@@ -225,6 +228,8 @@ class RectangleObstacle extends Obstacle {
 
     // New handleCollision method for RectangleObstacle
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
+        if (this.fatal) c.revive();
+
         c.jumpCount = 0; // Reset jump on any collision with obstacle
 
         // 1. Position Correction (move character out of penetration)

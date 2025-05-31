@@ -36,7 +36,6 @@ public class Character {
         if (lastCheckpoint==null) {
             this.terminate();
         } else {
-            System.out.println(this.lastCheckpoint.substageNum);
             character.sublevelNum = this.lastCheckpoint.substageNum;
             Main.currentSublevel = Main.currentLevel.sublevels.get(character.sublevelNum - 1);
             pane = Main.currentSublevel.pane;
