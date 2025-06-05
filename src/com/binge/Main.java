@@ -30,16 +30,11 @@ public class Main extends Application {
     public static final double FRICTION = 0.6; 
     
     // containers
-//    public static ArrayList<Obstacle.java> obstacles = new ArrayList<>();
-//    public static ArrayList<Character> characters = new ArrayList<>();
-//    public static ArrayList<Collectible> items = new ArrayList<>();
-//    public static ArrayList<Displacer> displacers = new ArrayList<>();
-//    public static ArrayList<Checkpoint> checkpoints = new ArrayList<>();
-//    public static ArrayList<Pane> stages = new ArrayList<>();
     public static Level currentLevel = new Level(0);
     public static Sublevel currentSublevel = new Sublevel(0);
 
     // For fixed timestep physics
+    public static AnimationTimer timer;
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
     private double accumulator = 0.0;
     private GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
@@ -63,7 +58,7 @@ public class Main extends Application {
 
         handleKeyEvent();
 
-        AnimationTimer timer = new AnimationTimer() {
+        timer = new AnimationTimer() {
             private long lastUpdateNanos = -1;
 
             @Override
@@ -160,14 +155,7 @@ public class Main extends Application {
 
         for (Lock l : currentSublevel.locks) {
             l.key.checkCollision(character);
-
-            if (l.key.collected) {
-                l.checkCollision(character, 0, 0, Main.FIXED_PHYSICS_DT);
-            } else {
-                double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
-                double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
-                ((RectangleObstacle) l).checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
-            }
+            l.checkCollision(character, 0, 0, Main.FIXED_PHYSICS_DT);
         }
 
         if (currentSublevel.goal != null) {
