@@ -8,11 +8,10 @@ import static com.binge.Main.pane;
 
 public class Character {
     Point2D pos, v;
-    int radius, jumpCount;
-    double mass;
+    int radius, jumpCount = 0;
     Circle body;
-    boolean movingLeft, movingRight, movingUp, specialTransport;
-    int coins;
+    boolean movingLeft = false, movingRight = false, movingUp = false, specialTransport = false;
+    int coins = 0;
     int levelNum, sublevelNum;
     Checkpoint lastCheckpoint;
 
@@ -20,15 +19,9 @@ public class Character {
         this.pos = new Point2D(posX, posY);
         this.v = new Point2D(0, 0);
         this.radius = radius;
-        this.movingLeft = false;
-        this.movingRight = false;
-        this.movingUp = false;
-        this.coins = 0;
         this.body = new Circle(posX, posY, radius);
         this.body.setFill(color);
         this.body.setStroke(Color.BLACK);
-        this.specialTransport = false;
-        this.jumpCount = 0;
     }
 
 

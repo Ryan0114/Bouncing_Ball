@@ -9,7 +9,9 @@ public class Sublevel {
     ArrayList<Obstacle> obstacles;
     ArrayList<Collectible> items;
     ArrayList<Displacer> displacers;
+    ArrayList<Lock> locks;
     Checkpoint checkpoint;
+    Goal goal;
     Pane pane;
 
     Sublevel(int n) {
@@ -18,5 +20,6 @@ public class Sublevel {
         this.obstacles = new ArrayList<>();
         this.items = new ArrayList<>();
         this.displacers = new ArrayList<>();
+        this.locks = new ArrayList<>();
     }
 }
