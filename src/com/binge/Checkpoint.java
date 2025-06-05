@@ -3,8 +3,7 @@ package com.binge;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-import static com.binge.Main.pane;
-import static com.binge.Main.WINDOW_HEIGHT;
+import static com.binge.Main.*;
 
 public class Checkpoint extends RectangleObstacle {
     int width = 30, substageNum;
@@ -35,6 +34,6 @@ class Goal extends RectangleObstacle {
 
     @Override
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
-        StageLoader.loadFinishPage();
+        PageLoader.loadFinishPage();
     }
 }

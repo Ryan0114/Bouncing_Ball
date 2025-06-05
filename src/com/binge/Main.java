@@ -1,6 +1,5 @@
 package com.binge;
 
-import com.sun.scenario.effect.impl.state.AccessHelper;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -55,9 +54,9 @@ public class Main extends Application {
 
         pane = new Pane(canvas);
 
-        StageLoader.loadMainPage(pane, canvas);
+        PageLoader.loadMainPage();
 
-        scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
+//        scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
         stage.setTitle("Ball");
         stage.show();
@@ -157,6 +156,22 @@ public class Main extends Application {
                 double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
                 c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
             }
+        }
+
+        for (Lock l : currentSublevel.locks) {
+            l.key.checkCollision(character);
+
+            if (l.key.collected) {
+                l.checkCollision(character, 0, 0, Main.FIXED_PHYSICS_DT);
+            } else {
+                double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
+                double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
+                ((RectangleObstacle) l).checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
+            }
+        }
+
+        if (currentSublevel.goal != null) {
+            currentSublevel.goal.checkCollision(character, 0, 0, Main.FIXED_PHYSICS_DT);
         }
 
         // 6. Update position IF NO OBSTACLE COLLISION handled position

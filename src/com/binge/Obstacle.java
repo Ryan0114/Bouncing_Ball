@@ -77,39 +77,6 @@ class CircleObstacle extends Obstacle {
             c.v.add(-normal.getX() * (1 + restitution) * vDotN, -normal.getY() * (1 + restitution) * vDotN);
         }
     }
-
-    // This old method is not directly called from Main anymore if checkCollision handles it
-    // However, Collectible's Coin uses CircleObstacle for its hitbox, so we keep a form of it.
-    // We will remove the old abstract handleCollision from Obstacle class,
-    // and subclasses will implement their specific collision response.
-    // For this class, the specific collision response is now in the new handleCollision.
-    // The below is kept if any old direct calls were made, but should be phased out.
-    // @Override
-    void handleCollision(Character c, double deltaTime) {
-        // This version is less precise as it doesn't know the exact normal and penetration
-        // from checkCollision. It recalculates them.
-        c.jumpCount = 0;
-        Point2D slope = c.pos.subtract(this.pos); // Vector from obstacle center to character center
-        Point2D normalizedSlope = slope.normalize();
-
-        // Correct position to be just outside the obstacle
-        double overlap = (c.radius + this.radius) - slope.magnitude();
-        if (overlap > 0) { // Ensure there's actual overlap before correcting
-            c.pos.add(normalizedSlope.getX() * (overlap + epsilon), normalizedSlope.getY() * (overlap + epsilon));
-        }
-        c.body.setCenterX(c.pos.getX());
-        c.body.setCenterY(c.pos.getY());
-
-        // Reflect velocity (as in original code)
-        double vDotSlope = c.v.dot(normalizedSlope);
-        // We only want to reflect if the velocity is towards the obstacle
-        if (vDotSlope < 0) {
-            c.v.add(-2 * normalizedSlope.getX() * vDotSlope, -2 * normalizedSlope.getY() * vDotSlope);
-        }
-        // Apply friction (scaling the entire velocity vector) - this might not be what you want after reflection.
-        // The main loop already scales velocity by FRICTION upon collision.
-        // c.v = c.v.scale(Main.FRICTION);
-    }
 }
 
 class RectangleObstacle extends Obstacle {
@@ -262,22 +229,22 @@ class RectangleObstacle extends Obstacle {
     }
 }
 
-//class CutOffObstacle extends Obstacle {
-//    Shape body;
-//
-//    CutOffObstacle(Pane pane, Shape main, Shape cut, Color color) {
-//        this.body = Shape.subtract(main, cut);
-//        this.body.setFill(color);
-//        this.body.setStroke(Color.BLACK);
-//        pane.getChildren().add(this.body);
-//    }
-//
-//    boolean checkCollision(Character c, double dispX, double dispY, double deltaTime) {
-//        // Complex collision for generic shapes, typically involves checking path intersections
-//        // or using libraries for this. For now, returning false.
-//        return false;
-//    }
-//
-//    // No specific handleCollision defined for CutOffObstacle yet.
-//    // If it were to be used, it would need its own collision response.
-//}
+class CutOffObstacle extends Obstacle {
+    Shape body;
+
+    CutOffObstacle(Pane pane, Shape main, Shape cut, Color color) {
+        this.body = Shape.subtract(main, cut);
+        this.body.setFill(color);
+        this.body.setStroke(Color.BLACK);
+        pane.getChildren().add(this.body);
+    }
+
+    boolean checkCollision(Character c, double dispX, double dispY, double deltaTime) {
+        // Complex collision for generic shapes, typically involves checking path intersections
+        // or using libraries for this. For now, returning false.
+        return false;
+    }
+
+    // No specific handleCollision defined for CutOffObstacle yet.
+    // If it were to be used, it would need its own collision response.
+}
