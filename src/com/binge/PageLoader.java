@@ -5,7 +5,6 @@ import java.util.Random;
 
 import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Button;
 import javafx.scene.paint.Color;
 import javafx.scene.layout.Pane;
@@ -65,6 +64,7 @@ public class PageLoader {
         pane.getChildren().add(stageBtn);
 
         stageBtn.setOnAction(e -> {
+            character.inGame = true;
             character.levelNum = 1;
             character.sublevelNum = 1;
             loadStage(1);
@@ -128,7 +128,9 @@ public class PageLoader {
                             if (tokens.length >= 2) {
                                 double x = Double.parseDouble(tokens[0]);
                                 double y = Double.parseDouble(tokens[1]);
-                                character = new Character(x, y, 20, Color.rgb(255,241,204));
+//                                character = new Character(x, y, 20, Color.rgb(255,241,204));
+                                character.pos.setX(x);
+                                character.pos.setY(y);
                                 sublevel.pane.getChildren().add(character.body);
                             }
                             break;
@@ -270,5 +272,49 @@ public class PageLoader {
             Platform.exit();
         });
         finishPage.getChildren().add(quit);
+    }
+
+    public static void loadDeathPage() {
+        Pane deathPage = new Pane();
+        Main.scene.setRoot(deathPage);
+
+        Text youDied = new Text("YOU DIED");
+        youDied.setFont(new Font(60));
+        youDied.setLayoutX(30);
+        youDied.setLayoutY(80);
+        deathPage.getChildren().add(youDied);
+
+        Button retry = new Button("Retry");
+        retry.setLayoutX(600);
+        retry.setLayoutY(480);
+        retry.setOnAction(event_retry -> {
+            character.inGame = true;
+            loadStage(1);
+        });
+        deathPage.getChildren().add(retry);
+
+        Button selectStage = new Button("Select Stage");
+        selectStage.setLayoutX(600);
+        selectStage.setLayoutY(520);
+        selectStage.setOnAction(event_selectStage -> {
+            loadSelectStage();
+        });
+        deathPage.getChildren().add(selectStage);
+
+        Button mainPage = new Button("Main Page");
+        mainPage.setLayoutX(600);
+        mainPage.setLayoutY(560);
+        mainPage.setOnAction(event_mainPage -> {
+            loadMainPage();
+        });
+        deathPage.getChildren().add(mainPage);
+
+        Button quit = new Button("quit");
+        quit.setLayoutX(600);
+        quit.setLayoutY(600);
+        quit.setOnAction(event_quit -> {
+            Platform.exit();
+        });
+        deathPage.getChildren().add(quit);
     }
 }

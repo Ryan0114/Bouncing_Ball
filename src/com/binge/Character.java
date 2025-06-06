@@ -3,8 +3,8 @@ package com.binge;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
-import static com.binge.Main.character;
-import static com.binge.Main.pane;
+import static com.binge.Main.*;
+import static com.binge.Main.canvas;
 
 public class Character {
     Point2D pos, v;
@@ -14,6 +14,7 @@ public class Character {
     int coins = 0;
     int levelNum, sublevelNum;
     Checkpoint lastCheckpoint;
+    boolean inGame = false;
 
     Character(double posX, double posY, int radius, Color color) {
         this.pos = new Point2D(posX, posY);
@@ -27,6 +28,7 @@ public class Character {
 
     void revive() {
         if (lastCheckpoint==null) {
+            this.inGame = false;
             this.terminate();
         } else {
             character.sublevelNum = this.lastCheckpoint.substageNum;
@@ -44,6 +46,10 @@ public class Character {
     }
 
     void terminate() {
-        System.out.println("YOU DIED");
+        mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        character.inGame = false;
+        character.v.setX(0);
+        character.v.setY(0);
+        PageLoader.loadDeathPage();
     }
 }

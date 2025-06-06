@@ -40,7 +40,7 @@ public class Main extends Application {
     // For fixed timestep physics
     public static Timeline timeline;
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
-    private GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
+    public static GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
 
     // Main character
     public static Character character = new Character(150, 50, 20, Color.rgb(255,241,204));
@@ -48,7 +48,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
-        this.mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
+        mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
 
         pane = new Pane(canvas);
 
@@ -65,8 +65,10 @@ public class Main extends Application {
         final Duration frameDuration = Duration.seconds(FIXED_PHYSICS_DT);
 
         timeline = new Timeline(new KeyFrame(frameDuration, e -> {
-            mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            updateGamePhysics(character, pane, canvas);
+            if (character.inGame) {
+                mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+                updateGamePhysics(character, pane, canvas);
+            }
         }));
 
         timeline.setCycleCount(Animation.INDEFINITE);
@@ -254,6 +256,13 @@ public class Main extends Application {
                 if (character.jumpCount < 2) { // Allow double jump if on ground or in air once
                     character.jumpCount++;
                     character.movingUp = true; // This will be an impulse
+                }
+            }
+            if (event.getCode() == KeyCode.P) {
+                if (timeline.getStatus() == Animation.Status.PAUSED) {
+                    timeline.play();
+                } else {
+                    timeline.pause();
                 }
             }
             if (event.getCode() == KeyCode.SPACE) character.specialTransport = true;
