@@ -1,6 +1,9 @@
 package com.binge;
 
+import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -9,6 +12,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.util.*;
@@ -34,7 +38,7 @@ public class Main extends Application {
     public static Sublevel currentSublevel = new Sublevel(0);
 
     // For fixed timestep physics
-    public static AnimationTimer timer;
+    public static Timeline timeline;
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
     private double accumulator = 0.0;
     private GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
@@ -58,32 +62,17 @@ public class Main extends Application {
 
         handleKeyEvent();
 
-        timer = new AnimationTimer() {
-            private long lastUpdateNanos = -1;
+        final double FIXED_PHYSICS_DT = 1.0 / 60.0; // 60 FPS physics
+        final Duration frameDuration = Duration.seconds(FIXED_PHYSICS_DT);
 
-            @Override
-            public void handle(long now) {
-                if (lastUpdateNanos < 0) {
-                    lastUpdateNanos = now;
-                    mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight()); // Clear on first frame
-                    return;
-                }
+        timeline = new Timeline(new KeyFrame(frameDuration, e -> {
+            mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            updateGamePhysics(character, pane, canvas);
+        }));
 
-                double frameDeltaTime = (now - lastUpdateNanos) / 1_000_000_000.0; // frameDeltaTime in seconds
-                lastUpdateNanos = now;
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
 
-                // prevents the physics loop from trying to catch up too much after a long lag
-                frameDeltaTime = Math.min(frameDeltaTime, 0.1);
-                mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-                accumulator += frameDeltaTime;
-
-                while (accumulator >= FIXED_PHYSICS_DT) {
-                    updateGamePhysics(character, pane, canvas);
-                    accumulator -= FIXED_PHYSICS_DT;
-                }
-            }
-        };
-        timer.start();
     }
 
     private void updateGamePhysics(Character character, Pane pane, Canvas canvas) {
