@@ -34,12 +34,10 @@ public class Character {
             pane = Main.currentSublevel.pane;
             pane.getChildren().remove(Main.canvas);
             pane.getChildren().add(Main.canvas);
-//            pane.getChildren().remove(character.body);
             character.pos.setX(character.lastCheckpoint.pos.getX());
             character.pos.setY(character.lastCheckpoint.pos.getY());
-//            character.body.setLayoutX(character.lastCheckpoint.pos.getX());
-//            character.body.setLayoutY(character.lastCheckpoint.pos.getY());
-//            character.body.setFill(Color.YELLOW);
+            character.v.setX(0);
+            character.v.setY(0);
             if (!pane.getChildren().contains(character.body)) pane.getChildren().add(character.body);
             Main.scene.setRoot(pane);
         }

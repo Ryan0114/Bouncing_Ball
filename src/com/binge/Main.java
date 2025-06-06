@@ -40,7 +40,6 @@ public class Main extends Application {
     // For fixed timestep physics
     public static Timeline timeline;
     private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
-    private double accumulator = 0.0;
     private GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
 
     // Main character
