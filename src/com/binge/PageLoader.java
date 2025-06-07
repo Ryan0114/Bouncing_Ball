@@ -1,5 +1,6 @@
 package com.binge;
 
+import com.binge.LaserObstacle; // by Joe
 import java.io.*;
 import java.util.Random;
 
@@ -95,6 +96,7 @@ public class PageLoader {
 
         Main.currentLevel = level;
         Main.currentSublevel = level.sublevels.getFirst();
+
     }
 
     public static Sublevel loadStageFromFile(String filename, int n) {
@@ -119,7 +121,7 @@ public class PageLoader {
                 } else if (line.equals("initial position") ||line.equals("CircleObstacle") ||
                         line.equals("RectangleObstacle") || line.equals("Coin") ||
                         line.equals("SizeShifter") || line.equals("GrapplePoint") || line.equals("Checkpoint") ||
-                        line.equals("CircleTrap") || line.equals("Goal") || line.equals("Lock")) {
+                        line.equals("CircleTrap") || line.equals("Goal") || line.equals("Lock") || line.equals("LaserObstacle")) {
                     section = line;
                 } else {
                     String[] tokens = line.split("\\s+");
@@ -217,6 +219,29 @@ public class PageLoader {
                             if (tokens.length >= 1) {
                                 double x = Double.parseDouble(tokens[0]);
                                 sublevel.goal = new Goal(sublevel.pane, x);
+                            }
+                            break;
+                        case "LaserObstacle": // by Joe
+                            if (tokens.length >= 3) {
+                                double yPos = Double.parseDouble(tokens[0]);
+                                double startX = Double.parseDouble(tokens[1]);
+                                double endX = Double.parseDouble(tokens[2]);
+                                double initialTimerOffset = 0.0; // Default value
+                                if (tokens.length >= 4) {
+                                    initialTimerOffset = Double.parseDouble(tokens[3]);
+                                }
+                                // Calculate initiallyOn based on offset, consistent with LaserObstacle constructor
+                                boolean initiallyOn = (initialTimerOffset % 4.0) < 2.0; // Assuming cycleDuration=4.0, onDuration=2.0
+
+                                LaserObstacle laser = new LaserObstacle(
+                                        sublevel.pane,
+                                        yPos,
+                                        startX,
+                                        endX,
+                                        initiallyOn, // Pass calculated initiallyOn
+                                        initialTimerOffset
+                                );
+                                sublevel.obstacles.add(laser);
                             }
                             break;
                     }

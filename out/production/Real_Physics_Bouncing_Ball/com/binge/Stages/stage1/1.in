@@ -22,3 +22,12 @@ SizeShifter
 480 400 10 -10
 initial position
 300 300
+
+LaserObstacle
+200 100 500 0.0
+20 300 700 1.0
+40 50 600 0.5
+60 400 600 1.5
+
+
+
