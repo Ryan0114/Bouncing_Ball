@@ -28,14 +28,14 @@ public class LaserObstacle extends Obstacle {
         this.pos = new Point2D(startX + (endX - startX) / 2, yPos); // Midpoint, for Obstacle's pos
         this.startPoint = new Point2D(startX, yPos);
         this.endPoint = new Point2D(endX, yPos);
-        
+
         this.fatal = true; // Lasers are fatal
         this.color = onColor; // Obstacle base color, can be the 'on' color
 
         this.timer = initialTimerOffset % cycleDuration;
         // Determine initial 'on' state based on timer and onDuration
         // If initialTimerOffset makes timer fall into onDuration, it's on.
-        this.isOn = (this.timer < onDuration); 
+        this.isOn = (this.timer < onDuration);
         // Note: The 'initiallyOn' parameter is not directly used here if initialTimerOffset dictates state.
         // If 'initiallyOn' was meant to override timer for the very first state, logic would need adjustment.
         // For now, initialTimerOffset determines the starting point in the cycle.
@@ -45,11 +45,11 @@ public class LaserObstacle extends Obstacle {
         lineBody.setStrokeWidth(thickness);
         lineBody.setStroke(this.onColor); // Always set to 'on' color
         lineBody.setVisible(this.isOn);   // Control visibility for blinking
-        
+
         this.body = lineBody; // Assign to the inherited 'body' field
         pane.getChildren().add(this.body);
     }
-    
+
     @Override
     public void update(double deltaTime) {
         timer = (timer + deltaTime) % cycleDuration;
@@ -89,7 +89,7 @@ public class LaserObstacle extends Obstacle {
         // The character's horizontal span is [charPos.getX() - c.radius, charPos.getX() + c.radius]
         // The laser's horizontal span is [laserStartX, laserEndX]
         boolean xOverlap = (charPos.getX() + c.radius > laserStartX) && // Char right edge past laser left edge
-                           (charPos.getX() - c.radius < laserEndX);   // Char left edge before laser right edge
+                (charPos.getX() - c.radius < laserEndX);   // Char left edge before laser right edge
 
         if (yOverlap && xOverlap) {
             // Collision detected.
