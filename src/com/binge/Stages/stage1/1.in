@@ -22,3 +22,18 @@ SizeShifter
 480 400 10 -10
 initial position
 300 300
+
+LaserObstacle
+200 100 500 0.0
+20 300 700 1.0
+40 50 600 0.5
+60 400 600 1.5
+200 100 500 0.0 1 1.0 6.0 2.0
+
+VerticalLaserObstacle
+150 100 400 1.25
+1050 200 600 1.25
+
+SpinningLaserObstacle
+600 400 300 0 90 2.0
+600 400 300 0 90 0.0 1 2.0 15.0 4
