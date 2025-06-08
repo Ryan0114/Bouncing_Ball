@@ -7,12 +7,14 @@ import javafx.scene.shape.Shape; // Required for the body property
 
 public class LaserObstacle extends Obstacle {
 
-    Point2D startPoint; // More general, but for horizontal, y will be same
-    Point2D endPoint;   // More general, but for horizontal, y will be same
-    // Or, for specifically horizontal:
-    // double yPosition;
-    // double startX;
-    // double endX;
+    public static enum LaserOrientation {
+        HORIZONTAL,
+        VERTICAL
+    }
+
+    private final LaserOrientation orientation;
+    Point2D startPoint; // Stores the logical start of the laser beam
+    Point2D endPoint;   // Stores the logical end of the laser beam
 
     boolean isOn;
     double cycleDuration = 4.0; // 2s on + 2s off
@@ -21,43 +23,100 @@ public class LaserObstacle extends Obstacle {
 
     Color onColor = Color.RED; // Laser color when active
     // Off color is handled by visibility, so no offColor field needed for stroke
-    double thickness = 3.0;
+    double thickness = 3.0; // Base thickness
 
-    // Constructor for a horizontal laser
-    public LaserObstacle(Pane pane, double yPos, double startX, double endX, boolean initiallyOn, double initialTimerOffset) {
-        this.pos = new Point2D(startX + (endX - startX) / 2, yPos); // Midpoint, for Obstacle's pos
-        this.startPoint = new Point2D(startX, yPos);
-        this.endPoint = new Point2D(endX, yPos);
+    // Pulsing properties
+    boolean isPulsing;
+    double minThickness;
+    double maxThickness;
+    double pulseDuration; // Time for one full pulse cycle (e.g., grow and shrink)
+    double pulseTimer;    // Timer for the pulse cycle
 
-        this.fatal = true; // Lasers are fatal
-        this.color = onColor; // Obstacle base color, can be the 'on' color
+    public LaserObstacle(Pane pane, LaserOrientation orientation,
+                         double primaryAxisPos, double startSecondaryAxis, double endSecondaryAxis,
+                         boolean initiallyOn, double initialTimerOffset, // Existing parameters
+                         boolean isPulsing, double minThickness, double maxThickness, double pulseDuration) { // New pulsing parameters
 
-        this.timer = initialTimerOffset % cycleDuration;
-        // Determine initial 'on' state based on timer and onDuration
-        // If initialTimerOffset makes timer fall into onDuration, it's on.
-        this.isOn = (this.timer < onDuration);
-        // Note: The 'initiallyOn' parameter is not directly used here if initialTimerOffset dictates state.
-        // If 'initiallyOn' was meant to override timer for the very first state, logic would need adjustment.
-        // For now, initialTimerOffset determines the starting point in the cycle.
+        this.orientation = orientation; // From existing logic
+        this.fatal = true;              // From existing logic
+        this.color = onColor;           // From existing logic (onColor is a class field)
+
+        this.cycleDuration = 4.0;       // From existing logic (or ensure it's a class field)
+        this.onDuration = 2.0;          // From existing logic (or ensure it's a class field)
+        this.timer = initialTimerOffset % cycleDuration; // From existing logic
+        this.isOn = (this.timer < onDuration);           // From existing logic
+
+        // Coordinate and point calculations (from existing logic)
+        double lineStartX, lineStartY, lineEndX, lineEndY;
+        if (orientation == LaserOrientation.HORIZONTAL) {
+            this.pos = new Point2D(startSecondaryAxis + (endSecondaryAxis - startSecondaryAxis) / 2, primaryAxisPos);
+            this.startPoint = new Point2D(startSecondaryAxis, primaryAxisPos);
+            this.endPoint = new Point2D(endSecondaryAxis, primaryAxisPos);
+            lineStartX = startSecondaryAxis; lineStartY = primaryAxisPos; lineEndX = endSecondaryAxis; lineEndY = primaryAxisPos;
+        } else { // VERTICAL
+            this.pos = new Point2D(primaryAxisPos, startSecondaryAxis + (endSecondaryAxis - startSecondaryAxis) / 2);
+            this.startPoint = new Point2D(primaryAxisPos, startSecondaryAxis);
+            this.endPoint = new Point2D(primaryAxisPos, endSecondaryAxis);
+            lineStartX = primaryAxisPos; lineStartY = startSecondaryAxis; lineEndX = primaryAxisPos; lineEndY = endSecondaryAxis;
+        }
+
+        // Pulsing parameters initialization
+        this.isPulsing = isPulsing;
+        if (this.isPulsing) {
+            this.minThickness = minThickness;
+            this.maxThickness = maxThickness;
+            // Ensure pulseDuration is positive to avoid division by zero or negative time
+            this.pulseDuration = (pulseDuration > 0) ? pulseDuration : 1.0; // Default to 1s if invalid
+            this.pulseTimer = 0.0;
+        } else {
+            this.minThickness = this.thickness; // this.thickness is the base class field (e.g. 3.0)
+            this.maxThickness = this.thickness;
+            this.pulseDuration = 1.0;
+            this.pulseTimer = 0.0;
+        }
 
         // Setup the visual representation (JavaFX Line)
-        Line lineBody = new Line(startX, yPos, endX, yPos);
-        lineBody.setStrokeWidth(thickness);
-        lineBody.setStroke(this.onColor); // Always set to 'on' color
-        lineBody.setVisible(this.isOn);   // Control visibility for blinking
+        Line lineBody = new Line(lineStartX, lineStartY, lineEndX, lineEndY);
+        // Set initial stroke width: if pulsing and on, it could be minThickness,
+        // or just base thickness and let update() fix it in the first frame.
+        // Simpler to set to base thickness, update() will adjust if needed.
+        lineBody.setStrokeWidth(this.thickness);
+        lineBody.setStroke(this.onColor);
+        lineBody.setVisible(this.isOn);
 
-        this.body = lineBody; // Assign to the inherited 'body' field
+        this.body = lineBody;
         pane.getChildren().add(this.body);
     }
 
     @Override
     public void update(double deltaTime) {
+        // Blinking logic
         timer = (timer + deltaTime) % cycleDuration;
         boolean newIsOn = (timer < onDuration);
 
         if (newIsOn != isOn) {
             isOn = newIsOn;
-            this.body.setVisible(isOn);
+            if (this.body != null) {
+                this.body.setVisible(isOn);
+            }
+        }
+
+        // Pulsing logic
+        if (this.body instanceof Line) { // Ensure body is a Line
+            Line lineBody = (Line) this.body;
+            if (this.isOn && this.isPulsing) {
+                pulseTimer = (pulseTimer + deltaTime) % pulseDuration;
+
+                // Calculate sinusoidal pulse progress (0 to 1 and back to 0)
+                double pulseProgressRatio = pulseTimer / pulseDuration;
+                double wave = 0.5 * (1 - Math.cos(pulseProgressRatio * 2 * Math.PI)); // Value from 0 to 1
+
+                double currentVisualThickness = this.minThickness + (this.maxThickness - this.minThickness) * wave;
+                lineBody.setStrokeWidth(currentVisualThickness);
+            } else {
+                // Set to base thickness if not pulsing or not on
+                lineBody.setStrokeWidth(this.thickness);
+            }
         }
     }
 
@@ -73,25 +132,28 @@ public class LaserObstacle extends Obstacle {
         // If precise swept collision is needed, it's more complex. Let's start with current position.
         Point2D charPos = c.pos; // Current character center
 
-        // Laser properties
-        double laserY = this.startPoint.getY(); // y-coordinate of the horizontal laser
-        double laserStartX = this.startPoint.getX();
-        double laserEndX = this.endPoint.getX();
+        // Laser properties depend on orientation
+        boolean overlapPrimaryAxis, overlapSecondaryAxis;
 
-        // 1. Check for Y-axis overlap (character's circle vs. laser line's effective thickness)
-        // The laser line itself has a visual thickness, but for collision,
-        // we treat it as a line and see if the character's circle crosses it.
-        // The character is hit if its center's Y is close enough to the laser's Y,
-        // and its body (radius) crosses the laser line.
-        boolean yOverlap = Math.abs(charPos.getY() - laserY) < c.radius;
+        if (this.orientation == LaserOrientation.HORIZONTAL) {
+            double laserY = this.startPoint.getY(); // y-coordinate of the horizontal laser
+            double laserStartX = this.startPoint.getX();
+            double laserEndX = this.endPoint.getX();
 
-        // 2. Check for X-axis overlap (character's circle vs. laser line segment)
-        // The character's horizontal span is [charPos.getX() - c.radius, charPos.getX() + c.radius]
-        // The laser's horizontal span is [laserStartX, laserEndX]
-        boolean xOverlap = (charPos.getX() + c.radius > laserStartX) && // Char right edge past laser left edge
-                (charPos.getX() - c.radius < laserEndX);   // Char left edge before laser right edge
+            overlapPrimaryAxis = Math.abs(charPos.getY() - laserY) < c.radius;
+            overlapSecondaryAxis = (charPos.getX() + c.radius > laserStartX) &&
+                    (charPos.getX() - c.radius < laserEndX);
+        } else { // VERTICAL
+            double laserX = this.startPoint.getX(); // x-coordinate of the vertical laser
+            double laserStartY = this.startPoint.getY();
+            double laserEndY = this.endPoint.getY();
 
-        if (yOverlap && xOverlap) {
+            overlapPrimaryAxis = Math.abs(charPos.getX() - laserX) < c.radius;
+            overlapSecondaryAxis = (charPos.getY() + c.radius > laserStartY) &&
+                    (charPos.getY() - c.radius < laserEndY);
+        }
+
+        if (overlapPrimaryAxis && overlapSecondaryAxis) {
             // Collision detected.
             // For lasers, the "normal" and "penetration" are less about physics response
             // and more about just detecting the hit. We can pass dummy values or null
