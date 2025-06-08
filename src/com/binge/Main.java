@@ -31,8 +31,8 @@ public class Main extends Application {
     private static final double MOVE_ACCELERATION = 600; // horizontal acceleration, pixels per second squared
     private static final double MAX_MOVE_SPEED = 1000;    // maximum horizontal speed
     private static final double NATURAL_SPEED_LIM = 500;
-    public static final double FRICTION = 0.6; 
-    
+    public static final double FRICTION = 0.6;
+
     // containers
     public static Level currentLevel = new Level(0);
     public static Sublevel currentSublevel = new Sublevel(0);
@@ -46,7 +46,7 @@ public class Main extends Application {
     public static Character character = new Character(150, 50, 20, Color.rgb(255,241,204));
 
     @Override
-    public void start(Stage stage) {
+    public void start(Stage stage   ) {
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
 
@@ -96,6 +96,11 @@ public class Main extends Application {
         character.v.setX(Math.max(-MAX_MOVE_SPEED, Math.min(character.v.getX(), MAX_MOVE_SPEED)));
         character.v.setY(Math.max(-MAX_MOVE_SPEED, Math.min(character.v.getY(), MAX_MOVE_SPEED))); // MAX_MOVE_SPEED for Y might be very high
 
+        // By Joe
+        // Update all obstacles (e.g., for animations like blinking lasers)
+        for (Obstacle obs : currentSublevel.obstacles) {
+            obs.update(FIXED_PHYSICS_DT); // Use the fixed delta time
+        }
         // 3. Collision Detection and Resolution with Obstacles
         boolean characterCollidedWithObstacle = false;
         for (Obstacle obs : currentSublevel.obstacles) {
