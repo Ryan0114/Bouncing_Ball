@@ -37,3 +37,9 @@ VerticalLaserObstacle
 SpinningLaserObstacle
 600 400 300 0 90 2.0
 600 400 300 0 90 0.0 1 2.0 15.0 4
+
+TrackingLaserObstacle
+50 400 120 300 50 0.0 4.0 0.0 0
+
+HomingMissileLauncherObstacle
+400 400 30 400 0.5 0.2 1 3.0 250 120 4.0 270
