@@ -14,6 +14,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 import java.io.File;
 import java.util.*;
@@ -47,12 +49,19 @@ public class Main extends Application {
     // Main character
     public static Character character = new Character(150, 50, 20, Color.rgb(255,241,204));
 
+    private static Text coinCounterText;
+
     @Override
     public void start(Stage stage   ) {
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
 
         pane = new Pane(canvas);
+
+        coinCounterText = new Text(10, 30, "Coins: 0"); // (x, y, 初始文字)
+        coinCounterText.setFont(new Font(20)); // 設定字體大小
+        coinCounterText.setFill(Color.GOLD); // 設定顏色
+        pane.getChildren().add(coinCounterText); // 將文字加入 pane 中
 
         PageLoader.loadMainPage();
 

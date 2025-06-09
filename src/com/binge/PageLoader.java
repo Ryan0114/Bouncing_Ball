@@ -12,25 +12,67 @@ import java.util.Random;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.paint.Color;
-import javafx.scene.layout.Pane;
+import javafx.scene.paint.*;
+import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.effect.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.geometry.Pos;
+import javafx.scene.shape.Rectangle;
 
 import static com.binge.Main.*;
 
 public class PageLoader {
 
+    // 背景漸變顏色
+    private static final LinearGradient BG_GRADIENT = new LinearGradient(
+            0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
+            new Stop(0, Color.web("#1a2a6c")),
+            new Stop(0.5, Color.web("#b21f1f")),
+            new Stop(1, Color.web("#1a2a6c"))
+    );
+
+    // 按鈕樣式
+    private static final String BUTTON_STYLE =
+            "-fx-background-color: linear-gradient(to bottom, #4CAF50, #2E7D32); " +
+                    "-fx-text-fill: white; " +
+                    "-fx-font-size: 18px; " +
+                    "-fx-font-weight: bold; " +
+                    "-fx-padding: 10 20; " +
+                    "-fx-background-radius: 15; " +
+                    "-fx-border-radius: 15; " +
+                    "-fx-border-width: 2; " +
+                    "-fx-border-color: #1B5E20; " +
+                    "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 5, 0, 0, 1);";
+
+    private static final String BUTTON_HOVER_STYLE =
+            "-fx-background-color: linear-gradient(to bottom, #66BB6A, #388E3C); " +
+                    "-fx-cursor: hand;";
+
+    // 標題陰影效果
+    private static final Effect TITLE_SHADOW = new DropShadow(10, Color.GOLD);
+
     public static void loadMainPage() {
         pane.getChildren().clear();
+        pane.setBackground(new Background(new BackgroundFill(BG_GRADIENT, null, null)));
 
+        // 標題設計 - 保留原有位置但美化樣式
         Text title = new Text("Ball");
         title.setLayoutX(300);
         title.setLayoutY(300);
-        title.setFont(new Font(80));
+        title.setFont(Font.font("Arial Rounded MT Bold", 80));
+        title.setFill(new LinearGradient(0,0,1,1, true, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.YELLOW),
+                new Stop(0.5, Color.ORANGE),
+                new Stop(1, Color.RED)
+        ));
+        title.setEffect(TITLE_SHADOW);
         pane.getChildren().add(title);
 
-        Button selectLevels = new Button("Play");
+        // 按鈕美化
+        Button selectLevels = createStyledButton("Play");
         selectLevels.setLayoutX(400);
         selectLevels.setLayoutY(400);
         pane.getChildren().add(selectLevels);
@@ -40,9 +82,9 @@ public class PageLoader {
             loadSelectStage();
         });
 
-        Button customLevel = new Button("Custom level");
+        Button customLevel = createStyledButton("Custom level");
         customLevel.setLayoutX(380);
-        customLevel.setLayoutY(440);
+        customLevel.setLayoutY(460);
         pane.getChildren().add(customLevel);
         customLevel.setOnAction(event2 -> {
             loadCustomStage();
@@ -54,8 +96,10 @@ public class PageLoader {
 
     public static void loadSelectStage() {
         pane.getChildren().clear();
+        pane.setBackground(new Background(new BackgroundFill(BG_GRADIENT, null, null)));
 
-        Button mainPage = new Button("main page");
+        // 返回按鈕美化
+        Button mainPage = createStyledButton("Main page");
         mainPage.setLayoutX(40);
         mainPage.setLayoutY(40);
         pane.getChildren().add(mainPage);
@@ -64,7 +108,8 @@ public class PageLoader {
             loadMainPage();
         });
 
-        Button stageBtn = new Button("Stage 1");
+        // 關卡按鈕美化
+        Button stageBtn = createStyledButton("Stage 1");
         stageBtn.setLayoutX(450);
         stageBtn.setLayoutY(400);
         pane.getChildren().add(stageBtn);
@@ -79,6 +124,7 @@ public class PageLoader {
         Main.scene.setRoot(pane);
     }
 
+    // 保持原有逻辑不变
     public static void loadStage(int n) {
         Level level = new Level(n);
         String path = "src/com/binge/Stages/stage" + n + "/";
@@ -104,6 +150,7 @@ public class PageLoader {
 
     }
 
+    // 保持原有逻辑不变
     public static Sublevel loadStageFromFile(String filename, int n) {
         Sublevel sublevel = new Sublevel(n);
 
@@ -447,39 +494,42 @@ public class PageLoader {
 
     public static void loadFinishPage() {
         Pane finishPage = new Pane(canvas);
+        finishPage.setBackground(new Background(new BackgroundFill(BG_GRADIENT, null, null)));
         Main.scene.setRoot(finishPage);
 
         Text congratulation = new Text("Congratulations!");
-        congratulation.setFont(new Font(60));
+        congratulation.setFont(Font.font("Arial", 60));
+        congratulation.setFill(Color.GOLD);
+        congratulation.setEffect(new DropShadow(15, Color.BLACK));
         congratulation.setLayoutX(30);
         congratulation.setLayoutY(80);
         finishPage.getChildren().add(congratulation);
 
-        Button nextStage = new Button("Next Stage");
+        // 美化按鈕
+        Button nextStage = createStyledButton("Next Stage");
         nextStage.setLayoutX(600);
-        nextStage.setLayoutY(480);
-
+        nextStage.setLayoutY(440);
         finishPage.getChildren().add(nextStage);
 
-        Button selectStage = new Button("Select Stage");
+        Button selectStage = createStyledButton("Select Stage");
         selectStage.setLayoutX(600);
-        selectStage.setLayoutY(520);
+        selectStage.setLayoutY(495);
         selectStage.setOnAction(event_selectStage -> {
             loadSelectStage();
         });
         finishPage.getChildren().add(selectStage);
 
-        Button mainPage = new Button("Main Page");
+        Button mainPage = createStyledButton("Main Page");
         mainPage.setLayoutX(600);
-        mainPage.setLayoutY(560);
+        mainPage.setLayoutY(550);
         mainPage.setOnAction(event_mainPage -> {
             loadMainPage();
         });
         finishPage.getChildren().add(mainPage);
 
-        Button quit = new Button("quit");
+        Button quit = createStyledButton("Quit");
         quit.setLayoutX(600);
-        quit.setLayoutY(600);
+        quit.setLayoutY(605);
         quit.setOnAction(event_quit -> {
             Platform.exit();
         });
@@ -488,45 +538,62 @@ public class PageLoader {
 
     public static void loadDeathPage() {
         Pane deathPage = new Pane();
+        deathPage.setBackground(new Background(new BackgroundFill(
+                new LinearGradient(0,0,1,1, true, CycleMethod.NO_CYCLE,
+                        new Stop(0, Color.web("#8E0E00")),
+                        new Stop(1, Color.web("#1F1C18"))
+                ), null, null)));
         Main.scene.setRoot(deathPage);
 
         Text youDied = new Text("YOU DIED");
-        youDied.setFont(new Font(60));
+        youDied.setFont(Font.font("Arial", 60));
+        youDied.setFill(Color.RED);
+        youDied.setEffect(new Glow(0.8));
         youDied.setLayoutX(30);
         youDied.setLayoutY(80);
         deathPage.getChildren().add(youDied);
 
-        Button retry = new Button("Retry");
+        // 美化按鈕
+        Button retry = createStyledButton("Retry");
         retry.setLayoutX(600);
-        retry.setLayoutY(480);
+        retry.setLayoutY(440);
         retry.setOnAction(event_retry -> {
             character.inGame = true;
             loadStage(1);
         });
         deathPage.getChildren().add(retry);
 
-        Button selectStage = new Button("Select Stage");
+        Button selectStage = createStyledButton("Select Stage");
         selectStage.setLayoutX(600);
-        selectStage.setLayoutY(520);
+        selectStage.setLayoutY(495);
         selectStage.setOnAction(event_selectStage -> {
             loadSelectStage();
         });
         deathPage.getChildren().add(selectStage);
 
-        Button mainPage = new Button("Main Page");
+        Button mainPage = createStyledButton("Main Page");
         mainPage.setLayoutX(600);
-        mainPage.setLayoutY(560);
+        mainPage.setLayoutY(550);
         mainPage.setOnAction(event_mainPage -> {
             loadMainPage();
         });
         deathPage.getChildren().add(mainPage);
 
-        Button quit = new Button("quit");
+        Button quit = createStyledButton("Quit");
         quit.setLayoutX(600);
-        quit.setLayoutY(600);
+        quit.setLayoutY(605);
         quit.setOnAction(event_quit -> {
             Platform.exit();
         });
         deathPage.getChildren().add(quit);
+    }
+
+    // 輔助方法：創建風格化按鈕（保留原有佈局位置）
+    private static Button createStyledButton(String text) {
+        Button btn = new Button(text);
+        btn.setStyle(BUTTON_STYLE);
+        btn.setOnMouseEntered(e -> btn.setStyle(BUTTON_STYLE + BUTTON_HOVER_STYLE));
+        btn.setOnMouseExited(e -> btn.setStyle(BUTTON_STYLE));
+        return btn;
     }
 }
