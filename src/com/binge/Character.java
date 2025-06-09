@@ -31,6 +31,8 @@ public class Character {
             this.inGame = false;
             this.terminate();
         } else {
+            mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            PageLoader.loadStage(1);
             character.sublevelNum = this.lastCheckpoint.substageNum;
             Main.currentSublevel = Main.currentLevel.sublevels.get(character.sublevelNum - 1);
             pane = Main.currentSublevel.pane;
@@ -40,6 +42,10 @@ public class Character {
             character.pos.setY(character.lastCheckpoint.pos.getY());
             character.v.setX(0);
             character.v.setY(0);
+            character.radius=20;
+            character.body.setRadius(20);
+
+
             if (!pane.getChildren().contains(character.body)) pane.getChildren().add(character.body);
             Main.scene.setRoot(pane);
         }
@@ -50,6 +56,8 @@ public class Character {
         character.inGame = false;
         character.v.setX(0);
         character.v.setY(0);
+        character.radius=20;
+        character.body.setRadius(20);
         PageLoader.loadDeathPage();
     }
 }

@@ -245,7 +245,7 @@ public class PageLoader {
                                 Random rand = new Random();
                                 Color color = new Color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble(), 1.0); // 1.0 is full opacity
 
-                                Lock lock = new Lock(sublevel.pane, lockX, lockY, 30, 50, color,
+                                Lock lock = new Lock(sublevel.pane, lockX, lockY, 30, 1000, color,
                                         keyX, keyY);
                                 sublevel.locks.add(lock);
                             }
