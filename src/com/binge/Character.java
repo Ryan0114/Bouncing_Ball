@@ -32,7 +32,7 @@ public class Character {
             this.terminate();
         } else {
             mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-            PageLoader.loadStage(1);
+            PageLoader.loadStage(currentLevel.index);
             character.sublevelNum = this.lastCheckpoint.substageNum;
             Main.currentSublevel = Main.currentLevel.sublevels.get(character.sublevelNum - 1);
             pane = Main.currentSublevel.pane;
@@ -59,5 +59,6 @@ public class Character {
         character.radius=20;
         character.body.setRadius(20);
         PageLoader.loadDeathPage();
+        character.jumpCount = 2;
     }
 }
