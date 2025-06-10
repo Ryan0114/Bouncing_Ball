@@ -49,29 +49,39 @@ public class Main extends Application {
     // Main character
     public static Character character = new Character(150, 50, 20, Color.rgb(255,241,204));
 
-    private static Text coinCounterText;
+    static Text coinCounterText;
 
     @Override
     public void start(Stage stage   ) {
+
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
 
         pane = new Pane(canvas);
 
-        coinCounterText = new Text(10, 30, "Coins: 0"); // (x, y, 初始文字)
-        coinCounterText.setFont(new Font(20)); // 設定字體大小
-        coinCounterText.setFill(Color.GOLD); // 設定顏色
-        pane.getChildren().add(coinCounterText); // 將文字加入 pane 中
+        //coins
+        coinCounterText = new Text(10, 12, "Coins: 0");
+        coinCounterText.setFont(new Font(20));
+        coinCounterText.setFill(Color.GOLD);
+        pane.getChildren().add(coinCounterText);
 
-        PageLoader.loadMainPage();
 
+        Pane rootPane = new Pane();
+        rootPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 //        scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+        rootPane.getChildren().add(coinCounterText);
+        scene = new Scene(rootPane, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
         stage.setTitle("Ball");
         stage.show();
-
+        PageLoader.loadMainPage();
         handleKeyEvent();
-
+        scene.rootProperty().addListener((obs, oldRoot, newRoot) -> {
+            if (newRoot instanceof Pane) {
+                ensureCoinCounterDisplayed((Pane) newRoot);
+            }
+        });
         final double FIXED_PHYSICS_DT = 1.0 / 60.0; // 60 FPS physics
         final Duration frameDuration = Duration.seconds(FIXED_PHYSICS_DT);
 
@@ -79,12 +89,22 @@ public class Main extends Application {
             if (character.inGame) {
                 mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                 updateGamePhysics(character, pane, canvas);
+                coinCounterText.setText("Coins: " + character.coins);
             }
         }));
 
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 
+    }
+    public static void ensureCoinCounterDisplayed(Pane currentPane) {
+        if (!currentPane.getChildren().contains(coinCounterText)) {
+            currentPane.getChildren().add(coinCounterText);
+        }
+        // 固定位置並置於最上層
+        coinCounterText.setLayoutX(10);
+        coinCounterText.setLayoutY(12);
+        coinCounterText.toFront();
     }
 
     private void updateGamePhysics(Character character, Pane pane, Canvas canvas) {
@@ -142,7 +162,7 @@ public class Main extends Application {
                 if (d instanceof GrapplePoint gp) {
                     if (!gp.cooldown) {
                         // Draw line directly using mainCanvasGc
-                        drawLine(this.mainCanvasGc, character.pos.x, character.pos.y, gp.pos.x, gp.pos.y);
+                        drawLine(mainCanvasGc, character.pos.x, character.pos.y, gp.pos.x, gp.pos.y);
                     }
                     if (character.specialTransport && !gp.cooldown) {
                         d.handleCollision(character); // GrapplePoint might need 'dt' if its effect is over time
@@ -220,6 +240,7 @@ public class Main extends Application {
         }
         // Left Wall
         if (character.body.getCenterX() - character.body.getRadius() < 0) {
+
             int lastSubstage = character.sublevelNum - 1;
             String lastStagePath = "src/com/binge/Stages/stage1/" + lastSubstage + ".in";
             File lastStageFile = new File(lastStagePath);
@@ -267,6 +288,7 @@ public class Main extends Application {
                     character.v.setX(-character.v.getX() * restitutionBoundary);
                 }
             }
+            coinCounterText.toFront();
         }
 
 
@@ -284,6 +306,7 @@ public class Main extends Application {
         // to let obstacle-specific friction take precedence.
 
         // System.out.println(character.v.getX() + " " + character.v.getY() + " | Jump: " + character.jumpCount);
+
     }
 
     private void handleKeyEvent() {
