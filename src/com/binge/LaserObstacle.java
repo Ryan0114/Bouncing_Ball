@@ -174,7 +174,9 @@ public class LaserObstacle extends Obstacle {
     // It might need to match a specific signature if Obstacle's collision handling evolves.
     // For now, let's assume a simple one.
     public void handleCollision(Character c) {
-        if (this.fatal && this.isOn) {
+        if (c instanceof Projectile) {
+            ((Projectile) c).vanish();
+        } else if (this.fatal && this.isOn) {
             c.revive();
         }
     }
