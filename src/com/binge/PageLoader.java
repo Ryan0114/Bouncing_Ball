@@ -357,11 +357,12 @@ public class PageLoader {
                                 double width = Double.parseDouble(tokens[2]);
                                 double height = Double.parseDouble(tokens[3]);
                                 double angle = Double.parseDouble(tokens[4]);
-                                boolean fatal = false;
-                                if (tokens.length >= 6) {
+                                boolean fatal = false, destroyable = false;
+                                if (tokens.length >= 7) {
                                     fatal = Boolean.parseBoolean(tokens[5]);
+                                    destroyable = Boolean.parseBoolean(tokens[6]);
                                 }
-                                RectangleObstacle ro = new RectangleObstacle(sublevel.pane, cx, cy, width, height, angle, Color.GRAY, fatal);
+                                RectangleObstacle ro = new RectangleObstacle(sublevel.pane, cx, cy, width, height, angle, Color.GRAY, fatal, destroyable);
                                 sublevel.obstacles.add(ro);
                             }
                             break;
@@ -639,11 +640,12 @@ public class PageLoader {
         double x = Double.parseDouble(tokens[0]);
         double y = Double.parseDouble(tokens[1]);
         int radius = Integer.parseInt(tokens[2]);
-        boolean fatal = false;
-        if (tokens.length >= 4) {
+        boolean fatal = false, destroyable = false;
+        if (tokens.length >= 5) {
             fatal = Boolean.parseBoolean(tokens[3]);
+            destroyable = Boolean.parseBoolean(tokens[4]);
         }
-        CircleObstacle co = new CircleObstacle(sublevel.pane, x, y, radius, Color.GRAY, fatal);
+        CircleObstacle co = new CircleObstacle(sublevel.pane, x, y, radius, Color.GRAY, fatal, destroyable);
         return co;
     }
 

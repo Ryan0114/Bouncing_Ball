@@ -7,7 +7,7 @@ CircleObstacle
 145 200 20
 40 150 30
 250 170 40
-700 700 40 true
+700 700 40 true false
 RectangleObstacle
 1000 650 300 50 15 true
 200 700 250 50 -10
