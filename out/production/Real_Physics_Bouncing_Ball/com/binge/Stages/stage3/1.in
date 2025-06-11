@@ -31,6 +31,7 @@ LaserObstacle
 200 100 500 0.0 1 1.0 6.0 2.0
 
 
+
 VerticalLaserObstacle
 150 100 400 1.25
 1050 200 600 1.25
