@@ -666,18 +666,36 @@ public class PageLoader {
         finishPage.getChildren().add(congratulation);
 
         // 美化按鈕
-        Button nextStage = createStyledButton("Next Stage");
-        nextStage.setLayoutX(600);
-        nextStage.setLayoutY(440);
+
         if(currentLevel.index!=3){
+            Button nextStage = createStyledButton("Next Stage");
+            nextStage.setLayoutX(600);
+            nextStage.setLayoutY(440);
             nextStage.setOnAction(e -> {
             character.inGame = true;
             character.levelNum = character.levelNum+1;
             character.sublevelNum = character.sublevelNum+1;
             character.jumpCount = 2;
             loadStage(currentLevel.index+1);
-        });}
-        finishPage.getChildren().add(nextStage);
+
+            });
+            finishPage.getChildren().add(nextStage);
+        }
+        else{
+            Text Thanks = new Text("Thank you for playing!");
+            Thanks.setFont(Font.font("Arial", 100));
+            Thanks.setFill(Color.LIGHTGOLDENRODYELLOW);
+            Thanks.setEffect(new DropShadow(15, Color.BLACK));
+            Thanks.setLayoutX(100);
+            Thanks.setLayoutY(300);
+            Thanks.setFill(new LinearGradient(0,0,1,1, true, CycleMethod.NO_CYCLE,
+                    new Stop(0, Color.YELLOW),
+                    new Stop(0.5, Color.LIGHTGREEN),
+                    new Stop(1, Color.CYAN)
+            ));
+            finishPage.getChildren().add(Thanks);
+        }
+
 
         Button selectStage = createStyledButton("Select Stage");
         selectStage.setLayoutX(600);
