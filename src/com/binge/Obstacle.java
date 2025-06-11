@@ -12,7 +12,7 @@ public abstract class Obstacle {
     Point2D pos; // For CircleObstacle, this is center. For RectangleObstacle, this will be center.
     Shape body;
     Color color;
-    boolean fatal;
+    boolean fatal, destroyable;
     double epsilon = 1e-5; // Small value to prevent sticking
 
     abstract boolean checkCollision(Character c, double dispX, double dispY, double deltaTime);
@@ -30,17 +30,19 @@ class CircleObstacle extends Obstacle {
     // Circle body is already a field in its JavaFX shape representation
 
     CircleObstacle(Pane pane, double posX, double posY, int radius, Color color) {
-        this(pane, posX, posY, radius, color, false);
+        this(pane, posX, posY, radius, color, false, false);
     }
 
-    CircleObstacle(Pane pane, double posX, double posY, int radius, Color color, boolean fatal) {
+    CircleObstacle(Pane pane, double posX, double posY, int radius, Color color, boolean fatal, boolean destroyable) {
         this.pos = new Point2D(posX, posY); // Center of the circle
         this.radius = radius;
         this.body = new Circle(posX, posY, radius);
         this.fatal = fatal;
         this.color = (fatal ? Color.RED : color);
         this.body.setFill(this.color);
-        this.body.setStroke(Color.BLACK);
+        this.destroyable = destroyable;
+        this.body.setStroke(destroyable ? Color.LAWNGREEN : Color.BLACK);
+        if (destroyable) this.body.setStrokeWidth(3);
         pane.getChildren().add(this.body);
     }
 
@@ -65,6 +67,14 @@ class CircleObstacle extends Obstacle {
     // New handleCollision signature for CircleObstacle
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
         if (this.fatal) c.revive();
+        if (c instanceof Projectile) {
+            if (this.destroyable) {
+                this.body.setFill(Color.TRANSPARENT);
+                this.body.setStroke(Color.TRANSPARENT);
+                ((Projectile) c).vanish();
+                return;
+            }
+        }
 
         c.jumpCount = 0;
 
@@ -92,18 +102,17 @@ class RectangleObstacle extends Obstacle {
     private final double width, height;
     private final double angle; // Angle in radians
 
-    // Constructor updated for center position and angle
-    RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color, boolean fatal) {
+    RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color, boolean fatal, boolean destroyable) {
         this.pos = new Point2D(centerX, centerY); // Store center position
         this.width = width;
         this.height = height;
         this.angle = Math.toRadians(angleDegrees);
         this.fatal = fatal;
+        this.destroyable = destroyable;
 
         // Create a rectangle shape, position it so its center is at (0,0) for rotation, then translate
         Rectangle rectShape = new Rectangle(-width / 2, -height / 2, width, height);
-        rectShape.setFill(this.color);
-        rectShape.setStroke(Color.BLACK);
+
 
         // Apply rotation around the center of the rectangle
         Rotate rotate = new Rotate(angleDegrees, 0, 0); // Rotate around its local center (0,0)
@@ -116,6 +125,9 @@ class RectangleObstacle extends Obstacle {
 
         this.color = (fatal ? Color.RED : color);
         this.body.setFill(this.color);
+        this.destroyable = destroyable;
+        this.body.setStroke(destroyable ? Color.LAWNGREEN : Color.BLACK);
+        if (destroyable) this.body.setStrokeWidth(3);
 
         pane.getChildren().add(this.body);
     }
@@ -206,6 +218,15 @@ class RectangleObstacle extends Obstacle {
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
         if (this.fatal) c.revive();
 
+        if (c instanceof Projectile) {
+            if (this.destroyable) {
+                this.body.setFill(Color.TRANSPARENT);
+                this.body.setStroke(Color.TRANSPARENT);
+                ((Projectile) c).vanish();
+                return;
+            }
+        }
+
         c.jumpCount = 0; // Reset jump on any collision with obstacle
 
         // 1. Position Correction (move character out of penetration)
@@ -229,8 +250,14 @@ class RectangleObstacle extends Obstacle {
             // New velocity:
             // Normal component: Reflects with restitution (bounce)
             // Tangential component: Scaled by friction (slide)
-            double newVx = -vn.getX() * restitution + vt.getX() * (1.0 - surfaceFrictionCoefficient);
-            double newVy = -vn.getY() * restitution + vt.getY() * (1.0 - surfaceFrictionCoefficient);
+            double newVx, newVy;
+            if (c instanceof Projectile) {
+                newVx = -vn.getX() + vt.getX();
+                newVy = -vn.getY() + vt.getY();
+            } else {
+                newVx = -vn.getX() * restitution + vt.getX() * (1.0 - surfaceFrictionCoefficient);
+                newVy = -vn.getY() * restitution + vt.getY() * (1.0 - surfaceFrictionCoefficient);
+            }
 
             c.v.setX(newVx);
             c.v.setY(newVy);

@@ -190,7 +190,9 @@ public class SpinningLaserObstacle extends Obstacle {
     // Placeholder for handleCollision method (specific to this class if needed, or use a generic one)
     // For now, let's assume a simple one for fatal lasers.
     public void handleCollision(Character c) {
-        if (this.fatal && this.isOn) {
+        if (c instanceof Projectile) {
+            ((Projectile) c).vanish();
+        } else if (this.fatal && this.isOn) {
             c.revive();
         }
     }
