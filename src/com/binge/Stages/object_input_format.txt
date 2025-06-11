@@ -1,0 +1,41 @@
+1. initial position
+x y
+
+2. CircleObstacle
+x y radius
+
+3. RectangleObstacle
+centerX centerY width height angle fatal
+
+4. Checkpoint
+x y
+
+5. Coin
+x y radius value
+
+6. Lock
+lockX lockY keyX keyY
+
+7. SizeShifter
+x y radius increment
+
+8. GrapplePoint
+x y radius
+
+9. Goal
+x
+
+10. LaserObstacle
+yPos starX endX initialTimerOffset isPulsing minThickness maxThickness pulseDuration
+
+11. VerticalLaserObstacle
+xPos startY endY initialTimerOffset isPulsing minThickness maxThickness pulseDuration
+
+12. SpinningLaserObstacle
+pivotX pivotY length initialAngle rotationSpeed initialTimerOffsetSpin isPulsing minThickness maxThickness pulseDuration
+
+13. TrackingLaserObstacle
+emitterX emitterY rotationSpeed detectionRange beamLength chargeSecs fireSecs cooldownSecs initialAngleDeg
+
+14. HomingMissileLauncherObstacle
+emitterX emitterY rotationSpeed detectRange lockonSecs fireInterval volleySize cooldownSecs projSpeed projTurnRateDeg projLifespan
