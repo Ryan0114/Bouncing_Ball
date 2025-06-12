@@ -1,6 +1,7 @@
 package com.binge;
 
 import com.binge.LaserObstacle; // by Joe
+import com.binge.SpiralMissileLauncherObstacle;
 import com.binge.LaserObstacle.LaserOrientation;
 import com.binge.SpinningLaserObstacle;
 import com.binge.TrackingLaserObstacle;
@@ -15,7 +16,6 @@ import javafx.scene.control.Button;
 import javafx.scene.paint.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.effect.*;
 import javafx.scene.image.Image;
@@ -328,8 +328,7 @@ public class PageLoader {
                         line.equals("SizeShifter") || line.equals("GrapplePoint") || line.equals("Checkpoint") ||
                         line.equals("CircleTrap") || line.equals("Goal") || line.equals("Lock") ||
                         line.equals("LaserObstacle") || line.equals("VerticalLaserObstacle") || line.equals("SpinningLaserObstacle")
-                        || line.equals("TrackingLaserObstacle") || line.equals("HomingMissileLauncherObstacle")|| line.equals("Text")
-                ) {
+                        || line.equals("TrackingLaserObstacle") || line.equals("HomingMissileLauncherObstacle") || line.equals("SpiralMissileLauncherObstacle")) {
                     section = line;
                 } else {
                     String[] tokens = line.split("\\s+");
@@ -350,7 +349,6 @@ public class PageLoader {
                                 CircleObstacle co = getCircleObstacle(tokens, sublevel);
                                 sublevel.obstacles.add(co);
                             }
-
                             break;
                         case "RectangleObstacle":
                             if (tokens.length >= 5) {
@@ -359,11 +357,12 @@ public class PageLoader {
                                 double width = Double.parseDouble(tokens[2]);
                                 double height = Double.parseDouble(tokens[3]);
                                 double angle = Double.parseDouble(tokens[4]);
-                                boolean fatal = false;
-                                if (tokens.length >= 6) {
+                                boolean fatal = false, destroyable = false;
+                                if (tokens.length >= 7) {
                                     fatal = Boolean.parseBoolean(tokens[5]);
+                                    destroyable = Boolean.parseBoolean(tokens[6]);
                                 }
-                                RectangleObstacle ro = new RectangleObstacle(sublevel.pane, cx, cy, width, height, angle, Color.GRAY, fatal);
+                                RectangleObstacle ro = new RectangleObstacle(sublevel.pane, cx, cy, width, height, angle, Color.GRAY, fatal, destroyable);
                                 sublevel.obstacles.add(ro);
                             }
                             break;
@@ -588,35 +587,37 @@ public class PageLoader {
                             }
                             break;
                         case "HomingMissileLauncherObstacle":
-                            // Expected format: emitterX emitterY rotSpeedDeg detectRange lockonSecs fireInterval volleySize cooldownSecs projSpeed projTurnRateDeg projLifespan [initialAngleDeg]
-                            if (tokens.length >= 11) { // 11 mandatory parameters
+                            // New Format: emitterX emitterY rotSpeedDeg detectRange lockonSecs fireInterval numProjectilesInSpread spreadAngleDeg cooldownSecs projSpeed projTurnRateDeg projLifespan [initialAngleDeg]
+                            if (tokens.length >= 12) { // Now 12 mandatory parameters
                                 double emitterX = Double.parseDouble(tokens[0]);
                                 double emitterY = Double.parseDouble(tokens[1]);
                                 double rotSpeedDeg = Double.parseDouble(tokens[2]);
                                 double detectRange = Double.parseDouble(tokens[3]);
                                 double lockonSecs = Double.parseDouble(tokens[4]);
-                                double fireInterval = Double.parseDouble(tokens[5]);
-                                int volleySize = Integer.parseInt(tokens[6]);
-                                double cooldownSecs = Double.parseDouble(tokens[7]);
-                                double projSpeed = Double.parseDouble(tokens[8]);
-                                double projTurnRateDeg = Double.parseDouble(tokens[9]);
-                                double projLifespan = Double.parseDouble(tokens[10]);
+                                double fireInterval = Double.parseDouble(tokens[5]); // Still parsed, though current spread logic might not use it
+                                int numProjectilesInSpread = Integer.parseInt(tokens[6]); // Formerly volleySize
+                                double spreadAngleDegParam = Double.parseDouble(tokens[7]); // New spread angle param
+                                double cooldownSecs = Double.parseDouble(tokens[8]);      // Index shifted
+                                double projSpeed = Double.parseDouble(tokens[9]);         // Index shifted
+                                double projTurnRateDeg = Double.parseDouble(tokens[10]); // Index shifted
+                                double projLifespan = Double.parseDouble(tokens[11]);    // Index shifted
 
                                 double initialAngleDeg = 0.0; // Default initial angle
-                                if (tokens.length >= 12) {
-                                    initialAngleDeg = Double.parseDouble(tokens[11]);
+                                if (tokens.length >= 13) { // Index shifted
+                                    initialAngleDeg = Double.parseDouble(tokens[12]);
                                 }
 
                                 Point2D emitterPos = new Point2D(emitterX, emitterY);
 
                                 HomingMissileLauncherObstacle launcher = new HomingMissileLauncherObstacle(
-                                        sublevel.pane, // Pass the sublevel's pane
+                                        sublevel.pane,
                                         emitterPos,
                                         rotSpeedDeg,
                                         detectRange,
                                         lockonSecs,
                                         fireInterval,
-                                        volleySize,
+                                        numProjectilesInSpread, // Passed as numProjectilesInSpread
+                                        spreadAngleDegParam,  // New argument
                                         cooldownSecs,
                                         projSpeed,
                                         projTurnRateDeg,
@@ -624,35 +625,53 @@ public class PageLoader {
                                         initialAngleDeg
                                 );
                                 sublevel.obstacles.add(launcher);
-                            }
-
-                            break;
-                        case "Text":
-                            if (tokens.length >= 3) {
-                                double x = Double.parseDouble(tokens[0]);
-                                double y = Double.parseDouble(tokens[1]);
-
-                                // 將 tokens[2] 之後的內容全部合併成一句話
-                                StringBuilder sb = new StringBuilder();
-                                for (int i = 2; i < tokens.length; i++) {
-                                    sb.append(tokens[i]);
-                                    if (i < tokens.length - 1) sb.append(" ");
-                                }
-                                String message = sb.toString();
-
-                                Text text = new Text(x, y, message);
-                                text.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-                                text.setFill(Color.GREEN);
-                                text.setStroke(Color.CYAN);
-                                text.setStrokeWidth(1);
-
-                                if (!sublevel.pane.getChildren().contains(text)) {
-                                    sublevel.pane.getChildren().add(text);
-                                }
-
+                            } else {
+                                System.err.println("HomingMissileLauncherObstacle: Not enough parameters. Expected at least 12, got " + tokens.length + " for line: " + java.util.Arrays.toString(tokens));
                             }
                             break;
+                        case "SpiralMissileLauncherObstacle":
+                            // Expected format: emitterX emitterY initialAimRotSpeedDeg spiralRotSpeedDeg detectionRange aimTimeSecs spiralFireDurSecs fireIntervalSecs cooldownSecs projSpeed projTurnRateDeg projLifespanSecs [initialAngleDeg]
+                            if (tokens.length >= 12) { // 12 mandatory parameters
+                                double emitterX = Double.parseDouble(tokens[0]);
+                                double emitterY = Double.parseDouble(tokens[1]);
+                                double initialAimRotSpeedDeg = Double.parseDouble(tokens[2]);
+                                double spiralRotSpeedDeg = Double.parseDouble(tokens[3]);
+                                double detectionRange = Double.parseDouble(tokens[4]);
+                                double aimTimeSecs = Double.parseDouble(tokens[5]);
+                                double spiralFireDurSecs = Double.parseDouble(tokens[6]);
+                                double fireIntervalSecs = Double.parseDouble(tokens[7]);
+                                double cooldownSecs = Double.parseDouble(tokens[8]);
+                                double projSpeed = Double.parseDouble(tokens[9]);
+                                double projTurnRateDeg = Double.parseDouble(tokens[10]);
+                                double projLifespanSecs = Double.parseDouble(tokens[11]);
 
+                                double initialAngleDeg = 0.0; // Default initial angle
+                                if (tokens.length >= 13) {
+                                    initialAngleDeg = Double.parseDouble(tokens[12]);
+                                }
+
+                                Point2D emitterPos = new Point2D(emitterX, emitterY);
+
+                                SpiralMissileLauncherObstacle spiralLauncher = new SpiralMissileLauncherObstacle(
+                                        sublevel.pane, // Pass the sublevel's pane
+                                        emitterPos,
+                                        initialAimRotSpeedDeg,
+                                        spiralRotSpeedDeg,
+                                        detectionRange,
+                                        aimTimeSecs,
+                                        spiralFireDurSecs,
+                                        fireIntervalSecs,
+                                        cooldownSecs,
+                                        projSpeed,
+                                        projTurnRateDeg,
+                                        projLifespanSecs,
+                                        initialAngleDeg
+                                );
+                                sublevel.obstacles.add(spiralLauncher);
+                            } else {
+                                System.err.println("SpiralMissileLauncherObstacle: Not enough parameters. Expected at least 12, got " + tokens.length + " for line: " + java.util.Arrays.toString(tokens));
+                            }
+                            break;
                     }
                 }
             }
@@ -667,11 +686,12 @@ public class PageLoader {
         double x = Double.parseDouble(tokens[0]);
         double y = Double.parseDouble(tokens[1]);
         int radius = Integer.parseInt(tokens[2]);
-        boolean fatal = false;
-        if (tokens.length >= 4) {
+        boolean fatal = false, destroyable = false;
+        if (tokens.length >= 5) {
             fatal = Boolean.parseBoolean(tokens[3]);
+            destroyable = Boolean.parseBoolean(tokens[4]);
         }
-        CircleObstacle co = new CircleObstacle(sublevel.pane, x, y, radius, Color.GRAY, fatal);
+        CircleObstacle co = new CircleObstacle(sublevel.pane, x, y, radius, Color.GRAY, fatal, destroyable);
         return co;
     }
 

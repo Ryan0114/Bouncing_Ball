@@ -52,7 +52,7 @@ public class Main extends Application {
     static Text coinCounterText;
 
     @Override
-    public void start(Stage stage   ) {
+    public void start(Stage stage) {
 
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
         mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
@@ -88,7 +88,10 @@ public class Main extends Application {
         timeline = new Timeline(new KeyFrame(frameDuration, e -> {
             if (character.inGame) {
                 mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
-                updateGamePhysics(character, pane, canvas);
+                updateGamePhysics(character);
+                if (character.missile != null && character.missile.activate) {
+                    updateGamePhysics(character.missile);
+                }
                 coinCounterText.setText("Coins: " + character.coins);
             }
         }));
@@ -107,10 +110,10 @@ public class Main extends Application {
         coinCounterText.toFront();
     }
 
-    private void updateGamePhysics(Character character, Pane pane, Canvas canvas) {
+    private void updateGamePhysics(Character character) {
 
         // 1. Apply forces (Gravity, Input)
-        character.v.add(0, GRAVITY * Main.FIXED_PHYSICS_DT);
+        if (!(character instanceof Projectile)) character.v.add(0, GRAVITY * Main.FIXED_PHYSICS_DT);
 
         if (character.movingLeft && character.v.getX() > -NATURAL_SPEED_LIM) {
             character.v.add(-MOVE_ACCELERATION * Main.FIXED_PHYSICS_DT, 0);
@@ -134,13 +137,17 @@ public class Main extends Application {
         }
         // 3. Collision Detection and Resolution with Obstacles
         boolean characterCollidedWithObstacle = false;
+        List<Obstacle> toRemove = new ArrayList<>();
+        double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
+        double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
         for (Obstacle obs : currentSublevel.obstacles) {
-            double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
-            double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
             if (obs.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT)) {
                 characterCollidedWithObstacle = true;
+
+                if (obs.destroyable && (character instanceof Projectile)) toRemove.add(obs);
             }
         }
+        currentSublevel.obstacles.removeAll(toRemove);
 
         // 4. Collectibles
         Iterator<Collectible> itemIterator = currentSublevel.items.iterator();
@@ -159,7 +166,7 @@ public class Main extends Application {
         // 5. Displacers (e.g., GrapplePoint)
         for (Displacer d : currentSublevel.displacers) {
             if (d.checkCollision(character)) {
-                if (d instanceof GrapplePoint gp) {
+                if ((d instanceof GrapplePoint gp) && !(character instanceof Projectile)) {
                     if (!gp.cooldown) {
                         // Draw line directly using mainCanvasGc
                         drawLine(mainCanvasGc, character.pos.x, character.pos.y, gp.pos.x, gp.pos.y);
@@ -173,8 +180,6 @@ public class Main extends Application {
 
         for (Checkpoint c : currentLevel.checkpoints) {
             if (c != null && currentSublevel.num == c.substageNum) {
-                double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
-                double displacementY = character.v.getY() * Main.FIXED_PHYSICS_DT;
                 c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
             }
         }
@@ -184,7 +189,7 @@ public class Main extends Application {
             l.checkCollision(character, 0, 0, Main.FIXED_PHYSICS_DT);
         }
 
-        if (currentSublevel.goal != null) {
+        if (currentSublevel.goal != null && !(character instanceof Projectile)) {
             currentSublevel.goal.checkCollision(character, 0, 0, Main.FIXED_PHYSICS_DT);
         }
 
@@ -192,20 +197,28 @@ public class Main extends Application {
         Iterator<HomingLaserProjectile> projectileIterator = activeProjectiles.iterator();
         while (projectileIterator.hasNext()) {
             HomingLaserProjectile projectile = projectileIterator.next();
-            projectile.update(FIXED_PHYSICS_DT); // FIXED_PHYSICS_DT is from Main class
+            projectile.update(FIXED_PHYSICS_DT); // Update movement, lifespan, etc.
 
-            if (!projectile.isActive()) { // Check if projectile deactivated itself (e.g. lifespan)
-                projectile.removeFromPane(); // Assumes projectile knows its pane
-                projectileIterator.remove();
-                continue; // Move to next projectile
+            // Check for collision with static obstacles first
+            // If projectile hits an obstacle, its checkCollisionWithObstacles->setActive(false)
+            // will also call removeFromPane().
+            if (projectile.isActive()) { // Only check obstacle collision if still active after update
+                projectile.checkCollisionWithObstacles(currentSublevel.obstacles);
             }
 
-            if (projectile.checkCollisionWithPlayer(character)) {
-                // Projectile's checkCollisionWithPlayer already sets itself inactive
-                character.revive(); // Player is hit
-                projectile.removeFromPane(); // Ensure it's removed visually
+            // Then, if still active (didn't hit an obstacle), check for player collision
+            // If projectile hits player, its checkCollisionWithPlayer->setActive(false)
+            // will also call removeFromPane().
+            if (projectile.isActive()) {
+                if (projectile.checkCollisionWithPlayer(character)) {
+                    character.revive(); // Player is hit
+                }
+            }
+
+            // Finally, remove from list if inactive for any reason (lifespan, hit obstacle, hit player)
+            if (!projectile.isActive()) {
+                // projectile.removeFromPane() was already called by setActive(false)
                 projectileIterator.remove();
-                // Potentially add sound effect or particle effect for explosion here
             }
         }
         // --- End Homing Laser Projectile ---
@@ -234,61 +247,76 @@ public class Main extends Application {
         }
         // Ceiling
         if (character.body.getCenterY() - character.body.getRadius() < 0) {
-            character.body.setCenterY(character.body.getRadius());
-            character.pos.setY(character.body.getCenterY());
-            if (character.v.getY() < 0) character.v.setY(-character.v.getY() * restitutionBoundary);
+            if (character instanceof Projectile) {
+                ((Projectile) character).vanish();
+            } else {
+                character.body.setCenterY(character.body.getRadius());
+                character.pos.setY(character.body.getCenterY());
+                if (character.v.getY() < 0) character.v.setY(-character.v.getY() * restitutionBoundary);
+            }
         }
         // Left Wall
         if (character.body.getCenterX() - character.body.getRadius() < 0) {
-
-            int lastSubstage = character.sublevelNum - 1;
-            String lastStagePath = "src/com/binge/Stages/stage1/" + lastSubstage + ".in";
-            File lastStageFile = new File(lastStagePath);
-
-//            if (lastStageFile.exists() && character.currentSubstage!=1) {
-            if (character.sublevelNum - 1 >= 1) {
-                character.sublevelNum -= 1;
-                currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);
-                scene.setRoot(currentSublevel.pane);
-                if (!currentSublevel.pane.getChildren().contains(canvas)) currentSublevel.pane.getChildren().add(canvas);
-                Point2D pos = character.pos;
-                pos.add(WINDOW_WIDTH - 2.5*character.radius, 0);
-                character.pos = pos;
-                character.body.setCenterX(character.pos.getX());
-                character.body.setCenterY(character.pos.getY());
-                if (!currentSublevel.pane.getChildren().contains(character.body)) currentSublevel.pane.getChildren().add(character.body);
+            if (character instanceof Projectile) {
+                ((Projectile) character).vanish();
             } else {
-                character.body.setCenterX(character.body.getRadius());
-                character.pos.setX(character.body.getCenterX());
-                if (character.v.getX() < 0) character.v.setX(-character.v.getX() * restitutionBoundary);
+                int lastSubstage = character.sublevelNum - 1;
+                String lastStagePath = "src/com/binge/Stages/stage1/" + lastSubstage + ".in";
+                File lastStageFile = new File(lastStagePath);
+
+                //            if (lastStageFile.exists() && character.currentSubstage!=1) {
+                if (character.sublevelNum - 1 >= 1) {
+                    character.sublevelNum -= 1;
+                    currentSublevel = currentLevel.sublevels.get(character.sublevelNum - 1);
+                    scene.setRoot(currentSublevel.pane);
+                    if (!currentSublevel.pane.getChildren().contains(canvas))
+                        currentSublevel.pane.getChildren().add(canvas);
+                    Point2D pos = character.pos;
+                    pos.add(WINDOW_WIDTH - 2.5 * character.radius, 0);
+                    character.pos = pos;
+                    character.body.setCenterX(character.pos.getX());
+                    character.body.setCenterY(character.pos.getY());
+                    if (!currentSublevel.pane.getChildren().contains(character.body))
+                        currentSublevel.pane.getChildren().add(character.body);
+                } else {
+                    character.body.setCenterX(character.body.getRadius());
+                    character.pos.setX(character.body.getCenterX());
+                    if (character.v.getX() < 0) character.v.setX(-character.v.getX() * restitutionBoundary);
+                }
             }
         }
         // Right Wall
         if (character.body.getCenterX() + character.body.getRadius() > pane.getWidth()) {
-            int nextSubstage = character.sublevelNum + 1;
-            String nextStagePath = "src/com/binge/Stages/stage1/" + nextSubstage + ".in";
-            File nextStageFile = new File(nextStagePath);
-
-//            if (nextStageFile.exists()) {
-            if (character.sublevelNum + 1 <= currentLevel.levelLength) {
-                character.sublevelNum += 1;
-                currentSublevel = currentLevel.sublevels.get(character.sublevelNum -1);
-                scene.setRoot(currentSublevel.pane);
-                if (!currentSublevel.pane.getChildren().contains(canvas)) currentSublevel.pane.getChildren().add(canvas);
-                Point2D pos = character.pos;
-                pos.add(-WINDOW_WIDTH + 2.5*character.radius, 0);
-                character.pos = pos;
-                character.body.setCenterX(character.pos.getX());
-                character.body.setCenterY(character.pos.getY());
-                if (!currentSublevel.pane.getChildren().contains(character.body)) currentSublevel.pane.getChildren().add(character.body);
+            if (character instanceof Projectile) {
+                ((Projectile) character).vanish();
             } else {
-                character.body.setCenterX(pane.getWidth() - character.body.getRadius());
-                character.pos.setX(character.body.getCenterX());
-                if (character.v.getX() > 0) {
-                    character.v.setX(-character.v.getX() * restitutionBoundary);
+                int nextSubstage = character.sublevelNum + 1;
+                String nextStagePath = "src/com/binge/Stages/stage1/" + nextSubstage + ".in";
+                File nextStageFile = new File(nextStagePath);
+
+                //            if (nextStageFile.exists()) {
+                if (character.sublevelNum + 1 <= currentLevel.levelLength) {
+                    character.sublevelNum += 1;
+                    currentSublevel = currentLevel.sublevels.get(character.sublevelNum - 1);
+                    scene.setRoot(currentSublevel.pane);
+                    if (!currentSublevel.pane.getChildren().contains(canvas))
+                        currentSublevel.pane.getChildren().add(canvas);
+                    Point2D pos = character.pos;
+                    pos.add(-WINDOW_WIDTH + 2.5 * character.radius, 0);
+                    character.pos = pos;
+                    character.body.setCenterX(character.pos.getX());
+                    character.body.setCenterY(character.pos.getY());
+                    if (!currentSublevel.pane.getChildren().contains(character.body))
+                        currentSublevel.pane.getChildren().add(character.body);
+                } else {
+                    character.body.setCenterX(pane.getWidth() - character.body.getRadius());
+                    character.pos.setX(character.body.getCenterX());
+                    if (character.v.getX() > 0) {
+                        character.v.setX(-character.v.getX() * restitutionBoundary);
+                    }
                 }
+                coinCounterText.toFront();
             }
-            coinCounterText.toFront();
         }
 
 
@@ -319,12 +347,16 @@ public class Main extends Application {
                     character.movingUp = true; // This will be an impulse
                 }
             }
-            if (event.getCode() == KeyCode.P) {
+            if (event.getCode() == KeyCode.P && character.inGame) {
                 if (timeline.getStatus() == Animation.Status.PAUSED) {
                     timeline.play();
                 } else {
                     timeline.pause();
                 }
+            }
+            if (event.getCode() == KeyCode.F && character.inGame) {
+                if (character.missile==null || !character.missile.activate) character.initMissile();
+                else character.missile.vanish();
             }
             if (event.getCode() == KeyCode.SPACE) character.specialTransport = true;
         });
@@ -332,8 +364,6 @@ public class Main extends Application {
         scene.setOnKeyReleased(event -> {
             if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) character.movingLeft = false;
             if (event.getCode() == KeyCode.D || event.getCode() == KeyCode.RIGHT) character.movingRight = false;
-            // movingUp is an impulse, so no key release needed to stop it in the same way as continuous movement
-            // If W was for continuous upward thrust, then character.movingUp = false; would be needed.
             if (event.getCode() == KeyCode.SPACE) character.specialTransport = false;
         });
     }
