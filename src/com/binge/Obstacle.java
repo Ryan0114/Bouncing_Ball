@@ -103,7 +103,7 @@ class RectangleObstacle extends Obstacle {
     private final double angle; // Angle in radians
 
     RectangleObstacle(Pane pane, double centerX, double centerY, double width, double height, double angleDegrees, Color color, boolean fatal, boolean destroyable) {
-        this.pos = new Point2D(centerX, centerY); // Store center position
+        this.pos = new Point2D(centerX, centerY); // Stsore center position
         this.width = width;
         this.height = height;
         this.angle = Math.toRadians(angleDegrees);
@@ -224,6 +224,10 @@ class RectangleObstacle extends Obstacle {
                 this.body.setStroke(Color.TRANSPARENT);
                 ((Projectile) c).vanish();
                 return;
+            }
+
+            if (this.fatal) {
+                ((Projectile) c).vanish();
             }
         }
 
