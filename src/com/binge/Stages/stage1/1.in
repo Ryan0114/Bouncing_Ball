@@ -1,5 +1,8 @@
 stage 1
 
+initial position
+200 300
+
 CircleObstacle
 350 700 30
 950 700 30 true
@@ -12,8 +15,6 @@ RectangleObstacle
 Checkpoint
 700 700
 
-initial position
-200 300
 
 Text
 330 650 General obstacles
