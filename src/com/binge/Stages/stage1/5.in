@@ -1,0 +1,27 @@
+stage 1
+RectangleObstacle
+600 780 1200 40 0
+
+Lock
+800 400 600 650
+
+Goal
+1100
+
+RectangleObstacle
+600 780 1200 40 0
+450 480 40 555 0
+
+Checkpoint
+100 700
+
+Coin
+100 100 20 20
+
+Text
+50 400 Reset your jump time on the wall >>>
+635 660 Key
+540 500 Use key to unlock>>>
+1000 400 goal>>>
+20 150 Bullet can rebound.
+
