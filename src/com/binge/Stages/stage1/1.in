@@ -2,12 +2,12 @@ stage 1
 
 CircleObstacle
 350 700 30
-950 700 30 true
+950 700 30 true false
 
 RectangleObstacle
 450 700 100 50 0
 600 780 1200 40 0
-1050 700 100 50 0 true
+1050 700 100 50 0 true false
 
 Checkpoint
 700 700

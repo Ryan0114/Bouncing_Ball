@@ -16,6 +16,7 @@ import javafx.scene.control.Button;
 import javafx.scene.paint.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.effect.*;
 import javafx.scene.image.Image;
@@ -302,7 +303,6 @@ public class PageLoader {
         Main.ensureCoinCounterDisplayed(pane);
     }
 
-    // 保持原有邏輯不變
     public static Sublevel loadStageFromFile(String filename, int n) {
         Sublevel sublevel = new Sublevel(n);
 
@@ -328,7 +328,8 @@ public class PageLoader {
                         line.equals("SizeShifter") || line.equals("GrapplePoint") || line.equals("Checkpoint") ||
                         line.equals("CircleTrap") || line.equals("Goal") || line.equals("Lock") ||
                         line.equals("LaserObstacle") || line.equals("VerticalLaserObstacle") || line.equals("SpinningLaserObstacle")
-                        || line.equals("TrackingLaserObstacle") || line.equals("HomingMissileLauncherObstacle") || line.equals("SpiralMissileLauncherObstacle")) {
+                        || line.equals("TrackingLaserObstacle") || line.equals("HomingMissileLauncherObstacle") ||
+                        line.equals("SpiralMissileLauncherObstacle") || line.equals("Text")) {
                     section = line;
                 } else {
                     String[] tokens = line.split("\\s+");
@@ -341,7 +342,6 @@ public class PageLoader {
                                 character.pos.setX(x);
                                 character.pos.setY(y);
                                 sublevel.pane.getChildren().add(character.body);
-
                             }
                             break;
                         case "CircleObstacle":
@@ -672,6 +672,32 @@ public class PageLoader {
                                 System.err.println("SpiralMissileLauncherObstacle: Not enough parameters. Expected at least 12, got " + tokens.length + " for line: " + java.util.Arrays.toString(tokens));
                             }
                             break;
+
+                        case "Text":
+                            if (tokens.length >= 3) {
+                                double x = Double.parseDouble(tokens[0]);
+                                double y = Double.parseDouble(tokens[1]);
+
+                                // 將 tokens[2] 之後的內容全部合併成一句話
+                                StringBuilder sb = new StringBuilder();
+                                for (int i = 2; i < tokens.length; i++) {
+                                    sb.append(tokens[i]);
+                                    if (i < tokens.length - 1) sb.append(" ");
+                                }
+                                String message = sb.toString();
+
+                                Text text = new Text(x, y, message);
+                                text.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+                                text.setFill(Color.GREEN);
+                                text.setStroke(Color.CYAN);
+                                text.setStrokeWidth(1);
+
+                                if (!sublevel.pane.getChildren().contains(text)) {
+                                    sublevel.pane.getChildren().add(text);
+                                }
+
+                            }
+                            break;
                     }
                 }
             }
@@ -705,6 +731,8 @@ public class PageLoader {
         finishPage.setBackground(new Background(new BackgroundFill(BG_GRADIENT, null, null)));
         Main.scene.setRoot(finishPage);
         character.lastCheckpoint=null;
+        character.v.setX(0);
+        character.v.setY(0);
         Text congratulation = new Text("Congratulations!");
         congratulation.setFont(Font.font("Arial", 60));
         congratulation.setFill(Color.GOLD);
@@ -812,7 +840,6 @@ public class PageLoader {
         Main.ensureCoinCounterDisplayed(pane);
     }
 
-    // 輔助方法：創建風格化按鈕（保留原有佈局位置）
     private static Button createStyledButton(String text) {
         Button btn = new Button(text);
         btn.setStyle(BUTTON_STYLE);
