@@ -10,13 +10,12 @@ public class Lock extends RectangleObstacle {
     Key key;
 
     Lock(Pane pane, double centerX, double centerY, double width, double height, Color color, double keyX, double keyY) {
-        super(pane, centerX, centerY, width, height, 0, color, false);
+        super(pane, centerX, centerY, width, height, 0, color, false, false);
 //        Circle bigCircle = new Circle(centerX, centerY, 10);
 //        Rectangle longRectangle = new Rectangle(centerX-3, centerY+3, 6, 20);
 //        this.body = Shape.subtract(this.body, bigCircle);
 //        this.body = Shape.subtract(this.body, longRectangle);
         key = new Key(pane, keyX, keyY, color);
-        System.out.println("Lock created");
     }
 
     @Override
@@ -44,7 +43,6 @@ class Key {
     boolean collected = false;
 
     Key(Pane pane){
-        System.out.println("Key created");
         Circle bigCircle = new Circle(50, 50, 10);
         Circle smallCircle = new Circle(50, 50, 3);
         Rectangle longRectangle = new Rectangle(47, 53, 6, 20);

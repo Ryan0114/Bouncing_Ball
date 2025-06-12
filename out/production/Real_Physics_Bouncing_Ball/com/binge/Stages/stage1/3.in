@@ -1,9 +1,32 @@
 stage 1
 RectangleObstacle
-1000 650 300 50 15
-200 700 250 50 -10
 600 780 1200 40 0
-Lock
-400 500 500 500
-Goal
-800
+680 730 400 60 0 true
+
+
+Checkpoint
+100 700
+
+GrapplePoint
+350 650 100
+
+
+
+TrackingLaserObstacle
+800 600 60 300 100 0.5 1.0 1.0 0
+
+
+LaserObstacle
+600 500 700 1.0
+
+VerticalLaserObstacle
+600 500 700 1.25
+
+SpinningLaserObstacle
+600 600 200 45 60 1.0
+
+Text
+250 650 Press space to hook.
+571 470 Laser
+740 470 Tracking laser
+

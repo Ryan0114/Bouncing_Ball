@@ -1,0 +1,18 @@
+stage 1
+GrapplePoint
+300 500 500
+Checkpoint
+1000 400
+CircleObstacle
+145 200 20
+40 150 30
+250 170 40
+900 700 30 false true
+RectangleObstacle
+400 300 50 500 0
+800 300 50 500 0
+1000 300 50 100 0 false true
+600 780 1200 40 0
+
+TrackingLaserObstacle
+200 400 120 300 100 0.0 4.0 0.0 0
