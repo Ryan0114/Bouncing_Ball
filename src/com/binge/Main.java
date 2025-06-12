@@ -355,8 +355,11 @@ public class Main extends Application {
                     character.missile.vanish();
                 }
             }
+
             if (event.getCode() == KeyCode.SPACE) character.specialTransport = true;
         });
+
+
 
         scene.setOnKeyReleased(event -> {
             if (event.getCode() == KeyCode.A || event.getCode() == KeyCode.LEFT) character.movingLeft = false;
