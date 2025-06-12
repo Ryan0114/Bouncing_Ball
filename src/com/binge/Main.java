@@ -12,6 +12,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.text.Font;
@@ -24,6 +25,7 @@ public class Main extends Application {
     public static Canvas canvas;
     public static Pane pane;
     public static Scene scene;
+    private static Text pauseText;
 
     // Screen properties
     public static final int WINDOW_HEIGHT = 800;
@@ -348,10 +350,24 @@ public class Main extends Application {
                 }
             }
             if (event.getCode() == KeyCode.P && character.inGame) {
+                if (pauseText == null) {
+                    pauseText = new Text(450, 350, "Pause");
+                    pauseText.setFont(Font.font("Arial", FontWeight.BOLD, 100));
+                    pauseText.setFill(Color.GREEN);
+                    pauseText.setStroke(Color.CYAN);
+                    pauseText.setStrokeWidth(3);
+                }
                 if (timeline.getStatus() == Animation.Status.PAUSED) {
+                    if (pauseText != null) {
+                        currentSublevel.pane.getChildren().remove(pauseText);
+                    }
                     timeline.play();
+
                 } else {
                     timeline.pause();
+                    if (!currentSublevel.pane.getChildren().contains(pauseText)) {
+                        currentSublevel.pane.getChildren().add(pauseText);
+                    }
                 }
             }
             if (event.getCode() == KeyCode.F && character.inGame) {

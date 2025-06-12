@@ -5,12 +5,12 @@ initial position
 
 CircleObstacle
 350 700 30
-950 700 30 true
+950 700 30 true false
 
 RectangleObstacle
 450 700 100 50 0
 600 780 1200 40 0
-1050 700 100 50 0 true
+1050 700 100 50 0 true false
 
 Checkpoint
 700 700
@@ -21,6 +21,7 @@ Text
 645 650 Check point
 930 650 Don't touch them!
 100 500 Use arrow keys to move.
+100 400 Press P to pause.
 730 550 You can double jump.
 1050 500 Next area >>>
 

@@ -33,6 +33,10 @@ class Coin extends Collectible {
 
     @Override
     public void handleCollision(Character c) {
+        if (c instanceof Projectile) {
+            Main.character.coins += this.value;
+        }
+
         c.coins += this.value;
         hitbox.color = Color.TRANSPARENT;
         hitbox.body.setFill(hitbox.color);
