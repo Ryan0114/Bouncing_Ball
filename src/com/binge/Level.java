@@ -5,6 +5,7 @@ import java.util.*;
 import static com.binge.Main.character;
 import static com.binge.Main.pane;
 
+//Characteristics of levels
 public class Level {
     int levelLength, index;
     ArrayList<Sublevel> sublevels;

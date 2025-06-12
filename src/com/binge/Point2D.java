@@ -1,5 +1,6 @@
 package com.binge;
 
+//Location
 public class Point2D {
     double x, y;
 

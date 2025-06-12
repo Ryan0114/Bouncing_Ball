@@ -2,6 +2,7 @@ package com.binge;
 
 import javafx.scene.paint.Color;
 
+//Bullet
 public class Projectile extends Character{
     boolean activate;
 

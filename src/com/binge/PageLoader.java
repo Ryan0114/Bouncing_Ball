@@ -168,7 +168,7 @@ public class PageLoader {
         pane.setBackground(new Background(new BackgroundFill(BG_GRADIENT, null, null)));
         character.lastCheckpoint=null;
         // title
-        Text title = new Text("Ball");
+        Text title = new Text("Space Ball");
         title.setLayoutX(300);
         title.setLayoutY(300);
         title.setFont(Font.font("Arial Rounded MT Bold", 80));
@@ -182,7 +182,7 @@ public class PageLoader {
 
         // button
         Button selectLevels = createStyledButton("Play");
-        selectLevels.setLayoutX(400);
+        selectLevels.setLayoutX(500);
         selectLevels.setLayoutY(400);
         pane.getChildren().add(selectLevels);
 
@@ -191,13 +191,7 @@ public class PageLoader {
             loadSelectStage();
         });
 
-        Button customLevel = createStyledButton("Custom level");
-        customLevel.setLayoutX(380);
-        customLevel.setLayoutY(460);
-        pane.getChildren().add(customLevel);
-        customLevel.setOnAction(event2 -> {
-            loadCustomStage();
-        });
+
         if (!currentSublevel.pane.getChildren().contains(Main.coinCounterText)) {
             currentSublevel.pane.getChildren().add(Main.coinCounterText);
         }
@@ -317,6 +311,7 @@ public class PageLoader {
         Main.ensureCoinCounterDisplayed(pane);
     }
 
+    //Load the levels from the file Stages
     public static Sublevel loadStageFromFile(String filename, int n) {
         Sublevel sublevel = new Sublevel(n);
 
@@ -738,10 +733,6 @@ public class PageLoader {
         return co;
     }
 
-    public static void loadCustomStage() {
-        Pane custom = new Pane(canvas);
-
-    }
 
     public static void loadFinishPage() {
         Pane finishPage = new Pane(canvas);

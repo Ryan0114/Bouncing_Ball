@@ -5,6 +5,7 @@ import javafx.scene.paint.Color;
 
 import static com.binge.Main.*;
 
+//Position of revival
 public class Checkpoint extends RectangleObstacle {
     int width = 30, substageNum;
     boolean activate = false;
@@ -31,11 +32,13 @@ public class Checkpoint extends RectangleObstacle {
     }
 }
 
+//Finish of the stages
 class Goal extends RectangleObstacle {
     Goal(Pane pane, double posX) {
         super(pane, posX, (double) WINDOW_HEIGHT /2, 30, WINDOW_HEIGHT, 0, Color.BLUE.deriveColor(0, 1, 1, 0.5), false, false);
     }
 
+    //Load finish page
     @Override
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
         PageLoader.loadFinishPage();
