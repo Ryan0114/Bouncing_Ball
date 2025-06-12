@@ -64,7 +64,6 @@ class CircleObstacle extends Obstacle {
         return false;
     }
 
-    // New handleCollision signature for CircleObstacle
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
         if (this.fatal) c.revive();
         if (c instanceof Projectile) {
