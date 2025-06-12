@@ -30,6 +30,7 @@ public class Character {
         }
     }
 
+    //Action after death
     void revive() {
         if (this instanceof Projectile) return;
         if (lastCheckpoint==null) {
@@ -68,6 +69,7 @@ public class Character {
         character.jumpCount = 2;
     }
 
+    //Shoot
     void initMissile() {
         this.missile = new Projectile(this.pos.x, this.pos.y, 10);
         this.missile.v = new Point2D((Math.signum(this.v.x)==0 ? 0.001 : Math.signum(this.v.x)) *300, -300);

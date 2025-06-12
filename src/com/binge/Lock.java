@@ -6,6 +6,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 
+//Obstacle that need key to pass
 public class Lock extends RectangleObstacle {
     Key key;
 
@@ -33,11 +34,13 @@ public class Lock extends RectangleObstacle {
     }
 }
 
+//Use it to pass lock
 class Key {
     Point2D pos;
     Shape body;
     boolean collected = false;
 
+    //draw key
     Key(Pane pane){
         Circle bigCircle = new Circle(50, 50, 10);
         Circle smallCircle = new Circle(50, 50, 3);

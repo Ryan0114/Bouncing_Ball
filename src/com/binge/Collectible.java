@@ -22,6 +22,7 @@ public abstract class Collectible {
     abstract void handleCollision(Character c);
 }
 
+//Coins
 class Coin extends Collectible {
     int value;
 
@@ -31,6 +32,7 @@ class Coin extends Collectible {
         hitbox = new CircleObstacle(pane, posX, posY, radius, Color.YELLOW);
     }
 
+    //Collect coins
     @Override
     public void handleCollision(Character c) {
         if (c instanceof Projectile) {
@@ -55,6 +57,7 @@ class SizeShifter extends Collectible {
         else hitbox = new CircleObstacle(pane, posX, posY, radius, Color.BLUE);
     }
 
+    //Change the size of character
     @Override
     public void handleCollision(Character c) {
         hitbox.color = Color.TRANSPARENT;

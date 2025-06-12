@@ -164,27 +164,7 @@ class RectangleObstacle extends Obstacle {
             // Calculate collision normal (from rectangle towards circle)
             // Normal in local coordinates (from closestPointLocal to charLocalPos)
             Point2D normalLocal = charLocalPos.subtract(closestPointLocal).normalize();
-            if (actualDistance < epsilon) { // Character center is very close to/on closest point (e.g. inside)
-                // If charLocalPos is inside the AABB, clampedX/Y is charLocalPos.x/y.
-                // We need a robust way to find the normal.
-                // A common approach is to find the shallowest penetration axis.
-                // For simplicity here, if deep inside, push out along vector from rect center to char center (local).
-                // However, charLocalPos.subtract(closestPointLocal) should still give a direction.
-                // If distance is near zero because char center is ON the clamped point, it means
-                // char center might be inside.
-                // A better normal if inside: vector from charLocalPos to one of the AABB edges.
-                // Smallest overlap determines the normal.
-                // dx_pen = c.radius - (halfWidth - Math.abs(charLocalPos.getX())) -> this is for AABB vs AABB
-                // For Circle vs AABB, if charLocalPos is inside AABB, then normal is from charLocalPos to nearest edge.
-                // Let's assume charLocalPos.subtract(closestPointLocal).normalize() is mostly fine for now
-                // It points from the surface of the rectangle towards the center of the circle.
-                // If charLocalPos == closestPointLocal (center of circle is inside rectangle)
-                // the normal should be based on which "face" is closest to escape.
-                // This case is tricky. For now, if distSq is very small and positive, normalLocal is valid.
-                // If distSq is zero (char center on closest point), and that point is an edge, normal is outward from edge.
-                // If char center is *inside* the rectangle, distSq calculation would be 0 using this method
-                // because closestPointLocal would be charLocalPos. This needs refinement.
-
+            if (actualDistance < epsilon) {
                 // Refined check for character center inside the rectangle (local coordinates)
                 if (Math.abs(charLocalPos.getX()) < halfWidth && Math.abs(charLocalPos.getY()) < halfHeight) {
                     // Character center is inside the rectangle.

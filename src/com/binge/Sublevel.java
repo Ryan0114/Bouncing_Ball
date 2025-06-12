@@ -4,6 +4,7 @@ import javafx.scene.layout.Pane;
 
 import java.util.ArrayList;
 
+//Characteristics of substages of levels
 public class Sublevel {
     int num;
     ArrayList<Obstacle> obstacles;
