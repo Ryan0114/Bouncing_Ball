@@ -1,0 +1,43 @@
+stage 4
+
+initial position
+150 650
+
+RectangleObstacle
+600 780 2000 40 0 true false
+200 720 120 40 0
+400 680 60 80 -20
+650 650 100 30 10
+1050 700 300 10 0
+1050 595 200 10 0
+1050 590 200 5 0 true false
+
+
+CircleObstacle
+300 600 25 true false
+500 550 30 true false
+800 580 30 true false
+
+HomingMissileLauncherObstacle
+850 450 90 400 0.8 0.3 3 45.0 2.0 120 180 5.0 0
+
+SpiralMissileLauncherObstacle
+950 400 60 120 350 1.0 2.5 1.0 1.5 70 150 4.0 90
+
+LaserObstacle
+350 350 600 0.5 1 2.0 8.0 1.5
+
+VerticalLaserObstacle
+300 200 500 1.0 1 1.5 6.0 1.2
+
+SpinningLaserObstacle
+700 400 150 0 90 0.8 1 4.0 10.0 2.0
+
+Checkpoint
+1050 650
+
+Coin
+350 450 10 10
+450 410 10 10
+540 430 10 10
+620 490 10 10
