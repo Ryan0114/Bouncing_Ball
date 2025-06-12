@@ -1,19 +1,16 @@
 stage 1
-RectangleObstacle
-600 780 1200 40 0
-Lock
-800 400 600 650
-Goal
-1000
-
-RectangleObstacle
-600 780 1200 40 0
 
 Checkpoint
 100 700
 
-Text
-635 660 Key
-540 500 Use key to unlock>>>
-900 400 goal>>>
+RectangleObstacle
+600 780 1200 40 0
+530 379 50 757 0 true true
 
+Coin
+760 393 30 30
+
+Text
+100 470 Press F to shoot.
+220 400 Can be broken by bullet >>>
+650 350 Can collect things by bullet.

@@ -12,6 +12,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.scene.text.Font;
@@ -24,6 +25,7 @@ public class Main extends Application {
     public static Canvas canvas;
     public static Pane pane;
     public static Scene scene;
+    private static Text pauseText;
 
     // Screen properties
     public static final int WINDOW_HEIGHT = 800;
@@ -43,7 +45,7 @@ public class Main extends Application {
 
     // For fixed timestep physics
     public static Timeline timeline;
-    private static final double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
+    public static double FIXED_PHYSICS_DT = 1.0 / 60.0; // Physics update rate (e.g., 60Hz)
     public static GraphicsContext mainCanvasGc; // To allow drawLine from updateGamePhysics
 
     // Main character
@@ -55,7 +57,7 @@ public class Main extends Application {
     public void start(Stage stage) {
 
         canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
-        mainCanvasGc = canvas.getGraphicsContext2D(); // Store the GraphicsContext
+        mainCanvasGc = canvas.getGraphicsContext2D();
 
         pane = new Pane(canvas);
 
@@ -68,7 +70,6 @@ public class Main extends Application {
 
         Pane rootPane = new Pane();
         rootPane.setPrefSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-//        scene = new Scene(pane, WINDOW_WIDTH, WINDOW_HEIGHT);
 
         rootPane.getChildren().add(coinCounterText);
         scene = new Scene(rootPane, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -82,16 +83,14 @@ public class Main extends Application {
                 ensureCoinCounterDisplayed((Pane) newRoot);
             }
         });
-        final double FIXED_PHYSICS_DT = 1.0 / 60.0; // 60 FPS physics
+
         final Duration frameDuration = Duration.seconds(FIXED_PHYSICS_DT);
 
         timeline = new Timeline(new KeyFrame(frameDuration, e -> {
             if (character.inGame) {
                 mainCanvasGc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
                 updateGamePhysics(character);
-                if (character.missile != null && character.missile.activate) {
-                    updateGamePhysics(character.missile);
-                }
+                updateGamePhysics(character.missile);
                 coinCounterText.setText("Coins: " + character.coins);
             }
         }));
@@ -104,7 +103,6 @@ public class Main extends Application {
         if (!currentPane.getChildren().contains(coinCounterText)) {
             currentPane.getChildren().add(coinCounterText);
         }
-        // 固定位置並置於最上層
         coinCounterText.setLayoutX(10);
         coinCounterText.setLayoutY(12);
         coinCounterText.toFront();
@@ -112,7 +110,7 @@ public class Main extends Application {
 
     private void updateGamePhysics(Character character) {
 
-        // 1. Apply forces (Gravity, Input)
+        // Apply forces (Gravity, Input)
         if (!(character instanceof Projectile)) character.v.add(0, GRAVITY * Main.FIXED_PHYSICS_DT);
 
         if (character.movingLeft && character.v.getX() > -NATURAL_SPEED_LIM) {
@@ -126,16 +124,15 @@ public class Main extends Application {
             character.movingUp = false;
         }
 
-        // 2. Clamp velocity (max speed limits)
+        // max speed limits
         character.v.setX(Math.max(-MAX_MOVE_SPEED, Math.min(character.v.getX(), MAX_MOVE_SPEED)));
         character.v.setY(Math.max(-MAX_MOVE_SPEED, Math.min(character.v.getY(), MAX_MOVE_SPEED))); // MAX_MOVE_SPEED for Y might be very high
 
-        // By Joe
         // Update all obstacles (e.g., for animations like blinking lasers)
         for (Obstacle obs : currentSublevel.obstacles) {
             obs.update(FIXED_PHYSICS_DT); // Use the fixed delta time
         }
-        // 3. Collision Detection and Resolution with Obstacles
+        // Collision Detection with Obstacles
         boolean characterCollidedWithObstacle = false;
         List<Obstacle> toRemove = new ArrayList<>();
         double displacementX = character.v.getX() * Main.FIXED_PHYSICS_DT;
@@ -149,7 +146,7 @@ public class Main extends Application {
         }
         currentSublevel.obstacles.removeAll(toRemove);
 
-        // 4. Collectibles
+        // Collectibles
         Iterator<Collectible> itemIterator = currentSublevel.items.iterator();
         while (itemIterator.hasNext()) {
             Collectible item = itemIterator.next();
@@ -163,7 +160,7 @@ public class Main extends Application {
         }
 
 
-        // 5. Displacers (e.g., GrapplePoint)
+        // Displacers (e.g., GrapplePoint)
         for (Displacer d : currentSublevel.displacers) {
             if (d.checkCollision(character)) {
                 if ((d instanceof GrapplePoint gp) && !(character instanceof Projectile)) {
@@ -178,12 +175,14 @@ public class Main extends Application {
             }
         }
 
+        // checkpoint collision
         for (Checkpoint c : currentLevel.checkpoints) {
             if (c != null && currentSublevel.num == c.substageNum) {
                 c.checkCollision(character, displacementX, displacementY, Main.FIXED_PHYSICS_DT);
             }
         }
 
+        // lock / key collision
         for (Lock l : currentSublevel.locks) {
             l.key.checkCollision(character);
             l.checkCollision(character, 0, 0, Main.FIXED_PHYSICS_DT);
@@ -223,29 +222,21 @@ public class Main extends Application {
         }
         // --- End Homing Laser Projectile ---
 
-        // 6. Update position IF NO OBSTACLE COLLISION handled position
-        // If an obstacle collision occurred, its handleCollision should have set the correct position.
-        // If characterCollidedWithObstacle is true, we assume position and velocity are handled.
-        // If false, apply standard Euler integration for position.
+        // 6. Update position
         if (!characterCollidedWithObstacle) {
             character.pos.add(character.v.getX() * Main.FIXED_PHYSICS_DT, character.v.getY() * Main.FIXED_PHYSICS_DT);
         }
-        // Always sync visual body to logical position after all physics and collision responses.
-        // Note: Obstacle.java handleCollision should update character.pos, this ensures body reflects it.
         character.body.setCenterX(character.pos.getX());
         character.body.setCenterY(character.pos.getY());
 
 
-        // 7. Boundary Collisions (Pane edges)
+        // 7. Boundary Collisions
         double restitutionBoundary = 0.4; // How much to bounce off pane boundaries
-        // Ground
+        // Ground collision
         if (character.body.getCenterY() + character.body.getRadius() > pane.getHeight()) {
-            character.body.setCenterY(pane.getHeight() - character.body.getRadius());
-            character.pos.setY(character.body.getCenterY());
-            if (character.v.getY() > 0) character.v.setY(-character.v.getY() * restitutionBoundary);
-            character.jumpCount = 0; // Reset jump count on ground
+            if (!(character instanceof Projectile)) character.revive();
         }
-        // Ceiling
+        // Ceiling collision
         if (character.body.getCenterY() - character.body.getRadius() < 0) {
             if (character instanceof Projectile) {
                 ((Projectile) character).vanish();
@@ -255,7 +246,7 @@ public class Main extends Application {
                 if (character.v.getY() < 0) character.v.setY(-character.v.getY() * restitutionBoundary);
             }
         }
-        // Left Wall
+        // Left Wall collision
         if (character.body.getCenterX() - character.body.getRadius() < 0) {
             if (character instanceof Projectile) {
                 ((Projectile) character).vanish();
@@ -264,7 +255,6 @@ public class Main extends Application {
                 String lastStagePath = "src/com/binge/Stages/stage1/" + lastSubstage + ".in";
                 File lastStageFile = new File(lastStagePath);
 
-                //            if (lastStageFile.exists() && character.currentSubstage!=1) {
                 if (character.sublevelNum - 1 >= 1) {
                     character.sublevelNum -= 1;
                     currentSublevel = currentLevel.sublevels.get(character.sublevelNum - 1);
@@ -285,7 +275,7 @@ public class Main extends Application {
                 }
             }
         }
-        // Right Wall
+        // Right Wall collision
         if (character.body.getCenterX() + character.body.getRadius() > pane.getWidth()) {
             if (character instanceof Projectile) {
                 ((Projectile) character).vanish();
@@ -294,7 +284,6 @@ public class Main extends Application {
                 String nextStagePath = "src/com/binge/Stages/stage1/" + nextSubstage + ".in";
                 File nextStageFile = new File(nextStagePath);
 
-                //            if (nextStageFile.exists()) {
                 if (character.sublevelNum + 1 <= currentLevel.levelLength) {
                     character.sublevelNum += 1;
                     currentSublevel = currentLevel.sublevels.get(character.sublevelNum - 1);
@@ -319,22 +308,12 @@ public class Main extends Application {
             }
         }
 
-
-        // Global friction/drag - apply this carefully.
-        // This could be air resistance or a general damping.
-        // If applied after specific collision responses, it will affect them.
-        // For smoother sliding on surfaces, the surface's own friction should dominate.
-        // Let's apply a very light air drag if NOT in collision with an obstacle that handled friction.
+        // air resistance
         if (!characterCollidedWithObstacle) {
             double airDragCoefficient = 0.01; // Very light drag
             character.v.setX(character.v.getX() * (1.0 - airDragCoefficient * Main.FIXED_PHYSICS_DT)); // Scale by dt for consistency
             character.v.setY(character.v.getY() * (1.0 - airDragCoefficient * Main.FIXED_PHYSICS_DT));
         }
-        // The old `character.v = character.v.scale(FRICTION);` when `collide` was true is removed
-        // to let obstacle-specific friction take precedence.
-
-        // System.out.println(character.v.getX() + " " + character.v.getY() + " | Jump: " + character.jumpCount);
-
     }
 
     private void handleKeyEvent() {
@@ -348,15 +327,33 @@ public class Main extends Application {
                 }
             }
             if (event.getCode() == KeyCode.P && character.inGame) {
+                if (pauseText == null) {
+                    pauseText = new Text(450, 350, "Pause");
+                    pauseText.setFont(Font.font("Arial", FontWeight.BOLD, 100));
+                    pauseText.setFill(Color.GREEN);
+                    pauseText.setStroke(Color.CYAN);
+                    pauseText.setStrokeWidth(3);
+                }
                 if (timeline.getStatus() == Animation.Status.PAUSED) {
+                    if (pauseText != null) {
+                        currentSublevel.pane.getChildren().remove(pauseText);
+                    }
                     timeline.play();
+
                 } else {
                     timeline.pause();
+                    if (!currentSublevel.pane.getChildren().contains(pauseText)) {
+                        currentSublevel.pane.getChildren().add(pauseText);
+                    }
                 }
             }
             if (event.getCode() == KeyCode.F && character.inGame) {
-                if (character.missile==null || !character.missile.activate) character.initMissile();
-                else character.missile.vanish();
+                if (character.missile==null || !character.missile.activate) {
+                    character.initMissile();
+                }
+                else {
+                    character.missile.vanish();
+                }
             }
 
             if (event.getCode() == KeyCode.SPACE) character.specialTransport = true;

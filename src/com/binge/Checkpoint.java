@@ -15,6 +15,10 @@ public class Checkpoint extends RectangleObstacle {
 
     @Override
     void handleCollision(Character c, Point2D normal, double penetration, double deltaTime) {
+        if (character.lastCheckpoint != null) {
+            character.lastCheckpoint.activate = false;
+            character.lastCheckpoint.body.setFill(Color.GRAY.deriveColor(0, 1, 1, 0.5));
+        }
         if (this.activate) return;
         c.lastCheckpoint = this;
         this.activate = true;

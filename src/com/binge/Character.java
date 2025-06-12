@@ -24,6 +24,10 @@ public class Character {
         this.body = new Circle(posX, posY, radius);
         this.body.setFill(color);
         this.body.setStroke(Color.BLACK);
+
+        if (!(this instanceof Projectile)) {
+            this.missile = new Projectile(-1, -1, 1);
+        }
     }
 
     void revive() {

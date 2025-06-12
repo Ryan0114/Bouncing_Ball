@@ -225,6 +225,10 @@ class RectangleObstacle extends Obstacle {
                 ((Projectile) c).vanish();
                 return;
             }
+
+            if (this.fatal) {
+                ((Projectile) c).vanish();
+            }
         }
 
         c.jumpCount = 0; // Reset jump on any collision with obstacle
