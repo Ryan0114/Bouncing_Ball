@@ -11,10 +11,6 @@ public class Lock extends RectangleObstacle {
 
     Lock(Pane pane, double centerX, double centerY, double width, double height, Color color, double keyX, double keyY) {
         super(pane, centerX, centerY, width, height, 0, color, false, false);
-//        Circle bigCircle = new Circle(centerX, centerY, 10);
-//        Rectangle longRectangle = new Rectangle(centerX-3, centerY+3, 6, 20);
-//        this.body = Shape.subtract(this.body, bigCircle);
-//        this.body = Shape.subtract(this.body, longRectangle);
         key = new Key(pane, keyX, keyY, color);
     }
 

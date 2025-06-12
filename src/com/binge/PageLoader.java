@@ -30,7 +30,7 @@ import static com.binge.Main.*;
 
 public class PageLoader {
 
-    // 背景漸變顏色
+    // gradient
     private static final LinearGradient BG_GRADIENT = new LinearGradient(
             0, 0, 1, 1, true, CycleMethod.NO_CYCLE,
             new Stop(0, Color.web("#1a2a6c")),
@@ -38,7 +38,7 @@ public class PageLoader {
             new Stop(1, Color.web("#1a2a6c"))
     );
 
-    // 按鈕樣式
+    // button style
     private static final String BUTTON_STYLE =
             "-fx-background-color: linear-gradient(to bottom, #4CAF50, #2E7D32); " +
                     "-fx-text-fill: white; " +
@@ -55,10 +55,10 @@ public class PageLoader {
             "-fx-background-color: linear-gradient(to bottom, #66BB6A, #388E3C); " +
                     "-fx-cursor: hand;";
 
-    // 標題陰影效果
+    // shade
     private static final Effect TITLE_SHADOW = new DropShadow(10, Color.GOLD);
 
-    // 漸層
+    // gradient
     private static final LinearGradient LEVEL_BG = new LinearGradient(
             0, 0, 0, 1, true, CycleMethod.NO_CYCLE,
             new Stop(0, Color.web("#0f2027")),
@@ -66,20 +66,20 @@ public class PageLoader {
             new Stop(1, Color.web("#2c5364"))
     );
 
-    // 星空
+    // star sky
     private static void createStarBackground(Pane pane) {
-        // 尺寸
+        // size
         double width = pane.getWidth() > 0 ? pane.getWidth() : 1200;
         double height = pane.getHeight() > 0 ? pane.getHeight() : 800;
 
         Canvas bgCanvas = new Canvas(width, height);
         GraphicsContext gc = bgCanvas.getGraphicsContext2D();
 
-        // 漸層
+        // gradient
         gc.setFill(LEVEL_BG);
         gc.fillRect(0, 0, width, height);
 
-        // 星星
+        // star
         gc.setFill(Color.WHITE);
         Random rand = new Random();
         for (int i = 0; i < 200; i++) {
@@ -87,14 +87,14 @@ public class PageLoader {
             double y = rand.nextDouble() * height;
             double size = rand.nextDouble() * 1.5 + 0.5;
 
-            // 隨機閃爍
+            // random opacity
             double opacity = 0.5 + rand.nextDouble() * 0.5;
             gc.setFill(Color.rgb(255, 255, 255, opacity));
 
             gc.fillOval(x, y, size, size);
         }
 
-        // 星系效果
+        // galaxy effect
         gc.setFill(new RadialGradient(
                 0, 0, 0.7, 0.3, 0.5, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(150, 40, 200, 0.2)),
@@ -109,10 +109,9 @@ public class PageLoader {
         ));
         gc.fillOval(width * 0.2, height * 0.7, 400, 400);
 
-        // 确保背景在最底層
         pane.getChildren().add(0, bgCanvas);
 
-        // 尺寸調整
+        // adjust size
         pane.widthProperty().addListener((obs, oldVal, newVal) -> {
             bgCanvas.setWidth(newVal.doubleValue());
             drawBackground(bgCanvas);
@@ -124,7 +123,7 @@ public class PageLoader {
         });
     }
 
-    // 重绘背景
+    // draw background
     private static void drawBackground(Canvas bgCanvas) {
         GraphicsContext gc = bgCanvas.getGraphicsContext2D();
         double width = bgCanvas.getWidth();
@@ -134,7 +133,7 @@ public class PageLoader {
         gc.setFill(LEVEL_BG);
         gc.fillRect(0, 0, width, height);
 
-        // 绘制星星
+        // draw star
         gc.setFill(Color.WHITE);
         Random rand = new Random();
         for (int i = 0; i < 200; i++) {
@@ -148,7 +147,7 @@ public class PageLoader {
             gc.fillOval(x, y, size, size);
         }
 
-        // 添加星系效果
+        // galaxy
         gc.setFill(new RadialGradient(
                 0, 0, 0.7, 0.3, 0.5, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.rgb(150, 40, 200, 0.2)),
@@ -168,7 +167,7 @@ public class PageLoader {
         pane.getChildren().clear();
         pane.setBackground(new Background(new BackgroundFill(BG_GRADIENT, null, null)));
         character.lastCheckpoint=null;
-        // 標題設計 - 保留原有位置但美化樣式
+        // title
         Text title = new Text("Ball");
         title.setLayoutX(300);
         title.setLayoutY(300);
@@ -181,7 +180,7 @@ public class PageLoader {
         title.setEffect(TITLE_SHADOW);
         pane.getChildren().add(title);
 
-        // 按鈕美化
+        // button
         Button selectLevels = createStyledButton("Play");
         selectLevels.setLayoutX(400);
         selectLevels.setLayoutY(400);
@@ -211,7 +210,7 @@ public class PageLoader {
         pane.getChildren().clear();
         pane.setBackground(new Background(new BackgroundFill(BG_GRADIENT, null, null)));
         character.lastCheckpoint=null;
-        // 返回按鈕美化
+        // return button
         Button mainPage = createStyledButton("Main page");
         mainPage.setLayoutX(40);
         mainPage.setLayoutY(40);
@@ -221,7 +220,7 @@ public class PageLoader {
             loadMainPage();
         });
 
-        // 關卡按鈕美化
+        // select stage button
         Button stageBtn = createStyledButton("Stage 1");
         stageBtn.setLayoutX(360);
         stageBtn.setLayoutY(400);
@@ -282,6 +281,8 @@ public class PageLoader {
         }
         character.levelNum = n;
         character.sublevelNum = 1;
+        character.radius = 20;
+        character.body.setRadius(character.radius);
         pane = level.sublevels.getFirst().pane;
         pane.getChildren().add(canvas);
         Main.scene.setRoot(pane);
@@ -306,14 +307,7 @@ public class PageLoader {
     public static Sublevel loadStageFromFile(String filename, int n) {
         Sublevel sublevel = new Sublevel(n);
 
-//        Main.obstacles.clear();
-//        Main.items.clear();
-//        Main.displacers.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-//            pane.getChildren().clear();
-//
-//            stage.getChildren().add(Main.canvas);
-
             String line;
             String section = "";
             while ((line = br.readLine()) != null) {
@@ -389,10 +383,15 @@ public class PageLoader {
                                 double lockY = Double.parseDouble(tokens[1]);
                                 double keyX = Double.parseDouble(tokens[2]);
                                 double keyY = Double.parseDouble(tokens[3]);
+                                int lockWidth = 30, lockHeight = 1200;
+                                if (tokens.length >= 6) {
+                                    lockWidth = Integer.parseInt(tokens[4]);
+                                    lockHeight = Integer.parseInt(tokens[5]);
+                                }
                                 Random rand = new Random();
                                 Color color = new Color(rand.nextDouble(), rand.nextDouble(), rand.nextDouble(), 1.0); // 1.0 is full opacity
 
-                                Lock lock = new Lock(sublevel.pane, lockX, lockY, 30, 1000, color,
+                                Lock lock = new Lock(sublevel.pane, lockX, lockY, lockWidth, lockHeight, color,
                                         keyX, keyY);
                                 sublevel.locks.add(lock);
                             }
