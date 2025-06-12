@@ -467,43 +467,7 @@ public class PageLoader {
                             break;
                         case "VerticalLaserObstacle":
                             if (tokens.length >= 3) {
-                                double xPos = Double.parseDouble(tokens[0]);     // primaryAxisPos (x for vertical)
-                                double startY = Double.parseDouble(tokens[1]);  // startSecondaryAxis (startY for vertical)
-                                double endY = Double.parseDouble(tokens[2]);    // endSecondaryAxis (endY for vertical)
-                                double initialTimerOffset = 0.0;
-                                if (tokens.length >= 4) {
-                                    initialTimerOffset = Double.parseDouble(tokens[3]);
-                                }
-                                boolean initiallyOn = (initialTimerOffset % 4.0) < 2.0; // Consistent calculation
-
-                                boolean isPulsing = false;
-                                double minThickness = 3.0; // DEFAULT_LASER_THICKNESS
-                                double maxThickness = 3.0; // DEFAULT_LASER_THICKNESS
-                                double pulseDuration = 1.0;
-
-                                // tokens[4] is isPulsing
-                                if (tokens.length > 4) {
-                                    isPulsing = Integer.parseInt(tokens[4]) == 1;
-                                    if (isPulsing) {
-                                        // tokens[5] is minThickness, tokens[6] is maxThickness, tokens[7] is pulseDuration
-                                        if (tokens.length > 7) {
-                                            minThickness = Double.parseDouble(tokens[5]);
-                                            maxThickness = Double.parseDouble(tokens[6]);
-                                            pulseDuration = Double.parseDouble(tokens[7]);
-                                        } else { // isPulsing is true, but not all 3 specific params given
-                                            minThickness = 1.0;
-                                            maxThickness = 5.0;
-                                        }
-                                    }
-                                }
-
-                                LaserObstacle verticalLaser = new LaserObstacle(
-                                        sublevel.pane,
-                                        LaserOrientation.VERTICAL,
-                                        xPos, startY, endY,
-                                        initiallyOn, initialTimerOffset,
-                                        isPulsing, minThickness, maxThickness, pulseDuration // New params
-                                );
+                                LaserObstacle verticalLaser = getLaserObstacle(tokens, sublevel);
                                 sublevel.obstacles.add(verticalLaser);
                             }
                             break;
@@ -680,6 +644,47 @@ public class PageLoader {
         }
         createStarBackground(sublevel.pane);
         return sublevel;
+    }
+
+    private static LaserObstacle getLaserObstacle(String[] tokens, Sublevel sublevel) {
+        double xPos = Double.parseDouble(tokens[0]);     // primaryAxisPos (x for vertical)
+        double startY = Double.parseDouble(tokens[1]);  // startSecondaryAxis (startY for vertical)
+        double endY = Double.parseDouble(tokens[2]);    // endSecondaryAxis (endY for vertical)
+        double initialTimerOffset = 0.0;
+        if (tokens.length >= 4) {
+            initialTimerOffset = Double.parseDouble(tokens[3]);
+        }
+        boolean initiallyOn = (initialTimerOffset % 4.0) < 2.0; // Consistent calculation
+
+        boolean isPulsing = false;
+        double minThickness = 3.0; // DEFAULT_LASER_THICKNESS
+        double maxThickness = 3.0; // DEFAULT_LASER_THICKNESS
+        double pulseDuration = 1.0;
+
+        // tokens[4] is isPulsing
+        if (tokens.length > 4) {
+            isPulsing = Integer.parseInt(tokens[4]) == 1;
+            if (isPulsing) {
+                // tokens[5] is minThickness, tokens[6] is maxThickness, tokens[7] is pulseDuration
+                if (tokens.length > 7) {
+                    minThickness = Double.parseDouble(tokens[5]);
+                    maxThickness = Double.parseDouble(tokens[6]);
+                    pulseDuration = Double.parseDouble(tokens[7]);
+                } else { // isPulsing is true, but not all 3 specific params given
+                    minThickness = 1.0;
+                    maxThickness = 5.0;
+                }
+            }
+        }
+
+        LaserObstacle verticalLaser = new LaserObstacle(
+                sublevel.pane,
+                LaserOrientation.VERTICAL,
+                xPos, startY, endY,
+                initiallyOn, initialTimerOffset,
+                isPulsing, minThickness, maxThickness, pulseDuration // New params
+        );
+        return verticalLaser;
     }
 
     private static CircleObstacle getCircleObstacle(String[] tokens, Sublevel sublevel) {
