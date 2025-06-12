@@ -349,7 +349,6 @@ public class PageLoader {
                                 CircleObstacle co = getCircleObstacle(tokens, sublevel);
                                 sublevel.obstacles.add(co);
                             }
-
                             break;
                         case "RectangleObstacle":
                             if (tokens.length >= 5) {
@@ -672,7 +671,6 @@ public class PageLoader {
                             } else {
                                 System.err.println("SpiralMissileLauncherObstacle: Not enough parameters. Expected at least 12, got " + tokens.length + " for line: " + java.util.Arrays.toString(tokens));
                             }
-
                             break;
                     }
                 }

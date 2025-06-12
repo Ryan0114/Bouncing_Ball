@@ -1,22 +1,26 @@
 stage 1
-GrapplePoint
-350 500 150
-650 400 150
-Checkpoint
-900 300
+
 CircleObstacle
-450 550 30
-600 500 30
+350 700 30
+950 700 30 true
+
 RectangleObstacle
-100 700 300 30 0
-600 700 400 30 -20
-900 700 400 30 -10
-600 780 1200 40 0 true
-Coin
-300 505 10 10
-675 375 10 10
-700 340 10 10
-SizeShifter
-800 300 10 -10
+450 700 100 50 0
+600 780 1200 40 0
+1050 700 100 50 0 true
+
+Checkpoint
+700 700
+
 initial position
 200 300
+
+Text
+330 650 General obstacles
+645 650 Check point
+930 650 Don't touch them!
+100 500 Use arrow keys to move.
+730 550 You can double jump.
+1050 500 Next area >>>
+
+
