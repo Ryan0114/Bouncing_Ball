@@ -261,6 +261,19 @@ public class PageLoader {
             loadStage(3);
         });
 
+        Button stageBtn4 = createStyledButton("Stage 4");
+        stageBtn4.setLayoutX(750);
+        stageBtn4.setLayoutY(400);
+        pane.getChildren().add(stageBtn4);
+
+        stageBtn4.setOnAction(e -> {
+            character.inGame = true;
+            character.levelNum = 4;
+            character.sublevelNum = 4;
+            character.jumpCount=2;
+            loadStage(4);
+        });
+
         Main.scene.setRoot(pane);
         Main.ensureCoinCounterDisplayed(pane);
     }
@@ -748,7 +761,7 @@ public class PageLoader {
 
         // 美化按鈕
 
-        if(currentLevel.index!=3){
+        if(currentLevel.index!=4){
             Button nextStage = createStyledButton("Next Stage");
             nextStage.setLayoutX(600);
             nextStage.setLayoutY(440);
