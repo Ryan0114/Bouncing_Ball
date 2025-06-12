@@ -12,6 +12,7 @@ public interface Displacer {
     abstract void handleCollision(Character c);
 }
 
+//Circle area can use hook
 class GrapplePoint extends CircleObstacle implements Displacer {
     double speed;
     boolean cooldown;

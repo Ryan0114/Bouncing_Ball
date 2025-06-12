@@ -74,7 +74,7 @@ public class Main extends Application {
         rootPane.getChildren().add(coinCounterText);
         scene = new Scene(rootPane, WINDOW_WIDTH, WINDOW_HEIGHT);
         stage.setScene(scene);
-        stage.setTitle("Ball");
+        stage.setTitle("Space Ball");
         stage.show();
         PageLoader.loadMainPage();
         handleKeyEvent();
@@ -326,6 +326,7 @@ public class Main extends Application {
                     character.movingUp = true; // This will be an impulse
                 }
             }
+
             if (event.getCode() == KeyCode.P && character.inGame) {
                 if (pauseText == null) {
                     pauseText = new Text(450, 350, "Pause");
@@ -334,19 +335,23 @@ public class Main extends Application {
                     pauseText.setStroke(Color.CYAN);
                     pauseText.setStrokeWidth(3);
                 }
+                //unpause
                 if (timeline.getStatus() == Animation.Status.PAUSED) {
                     if (pauseText != null) {
                         currentSublevel.pane.getChildren().remove(pauseText);
                     }
                     timeline.play();
 
-                } else {
+                }
+                //pause
+                else {
                     timeline.pause();
                     if (!currentSublevel.pane.getChildren().contains(pauseText)) {
                         currentSublevel.pane.getChildren().add(pauseText);
                     }
                 }
             }
+            //shoot
             if (event.getCode() == KeyCode.F && character.inGame) {
                 if (character.missile==null || !character.missile.activate) {
                     character.initMissile();
@@ -356,6 +361,7 @@ public class Main extends Application {
                 }
             }
 
+            //hook
             if (event.getCode() == KeyCode.SPACE) character.specialTransport = true;
         });
 
@@ -368,6 +374,7 @@ public class Main extends Application {
         });
     }
 
+    //Hook line
     private void drawLine(GraphicsContext gc, double x0, double y0, double x1, double y1) {
         gc.save();
         gc.setStroke(Color.RED);
