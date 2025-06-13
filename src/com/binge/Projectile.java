@@ -14,5 +14,8 @@ public class Projectile extends Character{
         this.body.setFill(Color.TRANSPARENT);
         this.body.setStroke(Color.TRANSPARENT);
         this.activate = false;
+        this.pos.setX(-100);
+        this.pos.setY(-100);
+        this.v.scale(0);
     }
 }

@@ -173,7 +173,7 @@ public class SpiralMissileLauncherObstacle extends Obstacle {
                             this.projectileLifespanSecs,
                             Main.character // Projectiles are homing
                     );
-                    Main.activeProjectiles.add(projectile);
+                    Main.currentSublevel.activeProjectiles.add(projectile);
                     timeSinceLastShot = 0.0; // Reset timer for the next shot
                 }
 

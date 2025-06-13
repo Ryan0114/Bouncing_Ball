@@ -11,6 +11,7 @@ public class Sublevel {
     ArrayList<Collectible> items;
     ArrayList<Displacer> displacers;
     ArrayList<Lock> locks;
+    ArrayList<HomingLaserProjectile> activeProjectiles;
     Checkpoint checkpoint;
     Goal goal;
     Pane pane;
@@ -22,5 +23,6 @@ public class Sublevel {
         this.items = new ArrayList<>();
         this.displacers = new ArrayList<>();
         this.locks = new ArrayList<>();
+        this.activeProjectiles = new ArrayList<>();
     }
 }

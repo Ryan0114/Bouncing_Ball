@@ -177,7 +177,7 @@ public class HomingMissileLauncherObstacle extends Obstacle {
                                 this.projectileLifespanSecs,
                                 Main.character
                         );
-                        Main.activeProjectiles.add(projectile);
+                        Main.currentSublevel.activeProjectiles.add(projectile);
                     } else {
                         double angleStep = this.spreadAngleRadians / (numToFire - 1);
                         double startAngle = centerAngle - this.spreadAngleRadians / 2.0;
@@ -194,7 +194,7 @@ public class HomingMissileLauncherObstacle extends Obstacle {
                                     this.projectileLifespanSecs,
                                     Main.character
                             );
-                            Main.activeProjectiles.add(projectile);
+                            Main.currentSublevel.activeProjectiles.add(projectile);
                         }
                     }
                     projectilesFiredThisVolley = numToFire; // Mark volley as complete

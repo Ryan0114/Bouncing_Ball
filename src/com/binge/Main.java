@@ -41,7 +41,6 @@ public class Main extends Application {
     // containers
     public static Level currentLevel = new Level(0);
     public static Sublevel currentSublevel = new Sublevel(0);
-    public static ArrayList<HomingLaserProjectile> activeProjectiles = new ArrayList<>();
 
     // For fixed timestep physics
     public static Timeline timeline;
@@ -193,7 +192,7 @@ public class Main extends Application {
         }
 
         // --- Homing Laser Projectile Update and Collision ---
-        Iterator<HomingLaserProjectile> projectileIterator = activeProjectiles.iterator();
+        Iterator<HomingLaserProjectile> projectileIterator = currentSublevel.activeProjectiles.iterator();
         while (projectileIterator.hasNext()) {
             HomingLaserProjectile projectile = projectileIterator.next();
             projectile.update(FIXED_PHYSICS_DT); // Update movement, lifespan, etc.
